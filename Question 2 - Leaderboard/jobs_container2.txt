@@ -1,0 +1,6 @@
+--cov future --seed 0 --mark-kernel 5 --tag abl_mk5
+--cov future --seed 1 --mark-kernel 5 --tag abl_mk5
+--cov future --seed 2 --mark-kernel 5 --tag abl_mk5
+--cov future --seed 0 --d-model 16 --d-ff 32 --tag abl_small
+--cov future --seed 1 --d-model 16 --d-ff 32 --tag abl_small
+--cov future --seed 2 --d-model 16 --d-ff 32 --tag abl_small

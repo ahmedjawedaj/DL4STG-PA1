@@ -1,0 +1,40 @@
+\section*{Generative AI use}
+I used Claude (Anthropic) and OpenAI Codex as assistants for this assignment.
+
+\textbf{Prompts.}
+\begin{itemize}
+  \item I asked Claude to read the PA1 handout and notebook, complete the required
+        implementation cells, run the notebook on the full preset, and draft the Task 1
+        responses from the numbered outputs.
+  \item I asked Claude to build a small Autoformer solution for the leaderboard task,
+        including preprocessing, chronological validation, optional-data ablation,
+        multi-seed runs, plots, and the final 168-value submission string.
+  \item I asked Codex to review Claude's work against the assignment requirements,
+        check for over-engineering or non-student-like writing, verify the leaderboard
+        submission files, and make the final report submission-ready.
+\end{itemize}
+
+\textbf{What the assistant produced.}
+\begin{itemize}
+  \item Task 1: the three notebook implementations, the full-preset run, and first drafts
+        of Responses 1A--4 from the exported Outputs.
+  \item Task 2: the \texttt{pa1q2} package (data handling, from-scratch Autoformer,
+        training with resumable early stopping, baselines, aggregation, figures,
+        submission writer), the experiment plan and runs, and a first draft of this
+        section.
+  \item Final review: checks for missing fields, exact prediction count, declared
+        parameter and epoch values, and consistency between the report and saved outputs.
+\end{itemize}
+
+\textbf{My edits and checks.}
+\begin{itemize}
+  \item I checked the notebook outputs, kept the full-preset figures and tables, and
+        edited the responses to focus on the required comparisons instead of only
+        describing the code.
+  \item For Task 2, I used my own validation split to choose the final model, kept the
+        optional-data ablation, and did not use the public leaderboard as a validation
+        signal.
+  \item I verified that \texttt{submission/predictions.txt} contains exactly 168 values
+        in chronological order and that the declared parameter count and epoch count
+        match the saved final run.
+\end{itemize}

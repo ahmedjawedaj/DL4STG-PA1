@@ -1,0 +1,3 @@
+--cov future --seed 0 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --tag abl_sm5_hmark_rep
+--cov future --seed 1 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --tag abl_sm5_hmark_rep
+--cov future --seed 2 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --tag abl_sm5_hmark_rep

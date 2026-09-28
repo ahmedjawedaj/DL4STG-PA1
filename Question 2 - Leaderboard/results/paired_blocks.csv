@@ -1,0 +1,13 @@
+config,reference,mean_block_RMSE_diff,blocks_worse_than_reference,blocks,sign_test_p
+future-abl_sm5_hmark_anchor_rep,future-abl_sm5_hmark_rep,-0.15391951368402193,25,51,1.0
+future-abl_sm5_hmark_rep,future-abl_sm5_hmark_rep,0.0,0,51,1.0
+future-abl_small_mk5,future-abl_sm5_hmark_rep,1.059601866514206,29,51,0.4010619910279374
+future-abl,future-abl_sm5_hmark_rep,1.2447888238739535,28,51,0.5758493477318467
+future-abl_mk5,future-abl_sm5_hmark_rep,1.3250501345212207,32,51,0.09191454981585423
+future-abl_small,future-abl_sm5_hmark_rep,1.5220523764159797,29,51,0.4010619910279374
+future-abl_small_mk5_anchor,future-abl_sm5_hmark_rep,2.2319427517421944,32,51,0.09191454981585423
+future-abl_noroll,future-abl_sm5_hmark_rep,2.361421708456933,38,51,0.0006210434562277101
+future-abl_small_mk5_anchor_rep,future-abl_sm5_hmark_rep,2.4799491118616634,34,51,0.024092907698449295
+future-abl_log,future-abl_sm5_hmark_rep,3.5191104408651395,28,51,0.5758493477318467
+none-abl,future-abl_sm5_hmark_rep,21.867530589694667,48,51,1.9674928353197174e-11
+past-abl,future-abl_sm5_hmark_rep,22.47923209603237,45,51,1.8323628836469652e-08

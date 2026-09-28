@@ -1,0 +1,17 @@
+.DS_Store
+__pycache__/
+*.pyc
+
+# Generated model states and scratch output
+Question 1/checkpoints/
+Question 2 - Leaderboard/runs/
+Question 2 - Leaderboard/_to_delete/
+_to_delete/
+
+# LaTeX build intermediates
+report/*.aux
+report/*.log
+report/*.out
+report/*.toc
+report/*.fls
+report/*.fdb_latexmk

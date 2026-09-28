@@ -1,0 +1,3 @@
+--cov future --seed 0 --d-model 16 --d-ff 32 --mark-kernel 5 --anchor 1 --pad replicate --tag abl_small_mk5_anchor_rep
+--cov future --seed 1 --d-model 16 --d-ff 32 --mark-kernel 5 --anchor 1 --pad replicate --tag abl_small_mk5_anchor_rep
+--cov future --seed 2 --d-model 16 --d-ff 32 --mark-kernel 5 --anchor 1 --pad replicate --tag abl_small_mk5_anchor_rep

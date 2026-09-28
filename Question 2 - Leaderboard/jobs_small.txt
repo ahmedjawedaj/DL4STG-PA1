@@ -1,0 +1,3 @@
+--cov future --seed 0 --d-model 16 --d-ff 32 --tag abl_small
+--cov future --seed 1 --d-model 16 --d-ff 32 --tag abl_small
+--cov future --seed 2 --d-model 16 --d-ff 32 --tag abl_small

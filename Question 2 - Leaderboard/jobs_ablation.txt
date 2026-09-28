@@ -1,0 +1,15 @@
+--cov future --seed 0 --tag abl
+--cov none --seed 0 --tag abl
+--cov past --seed 0 --tag abl
+--cov future --seed 1 --tag abl
+--cov none --seed 1 --tag abl
+--cov past --seed 1 --tag abl
+--cov future --seed 2 --tag abl
+--cov none --seed 2 --tag abl
+--cov past --seed 2 --tag abl
+--cov future --seed 0 --rolling "" --tag abl_noroll
+--cov future --seed 1 --rolling "" --tag abl_noroll
+--cov future --seed 2 --rolling "" --tag abl_noroll
+--cov future --seed 0 --log-target 1 --tag abl_log
+--cov future --seed 1 --log-target 1 --tag abl_log
+--cov future --seed 2 --log-target 1 --tag abl_log

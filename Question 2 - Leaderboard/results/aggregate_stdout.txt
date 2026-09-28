@@ -1,0 +1,27 @@
+                                 seeds  parameters  es_RMSE_mean  es_RMSE_std  holdout_RMSE_mean  holdout_RMSE_std  holdout_MAE_mean  holdout_sMAPE_mean  winter_RMSE_mean  winter_RMSE_std  epochs_run_mean
+config                                                                                                                                                                                                      
+future-abl_sm5_hmark_anchor_rep      3       11297         77.57         2.03              72.94              1.93             51.57               70.67             85.37             2.42             3.67
+future-abl_sm5_hmark_rep             3       11297         77.46         2.80              73.18              2.40             51.61               69.57             82.88             2.52             3.33
+future-abl_mk5                       3       32193         79.68         0.87              73.98              3.20             52.40               69.35             84.51             4.40             4.00
+future-abl_noroll                    3       22209         81.56         1.12              74.33              0.56             53.17               68.46             88.60             4.72             5.67
+future-abl                           3       23489         79.19         0.91              74.40              1.27             51.69               72.79             88.22             2.05             5.33
+future-abl_small_mk5                 3       10977         79.08         2.77              74.48              2.57             52.02               70.12             85.48             2.65             3.67
+future-abl_small                     3        6625         80.77         0.75              75.12              1.11             52.53               67.63             87.08             3.86             5.00
+future-abl_small_mk5_anchor_rep      3       10977         78.49         3.07              75.42              4.20             53.96               69.62             84.97             2.21             3.33
+future-abl_small_mk5_anchor          3       10977         78.19         2.88              75.67              3.95             53.50               68.75             84.64             1.49             5.00
+future-abl_log                       3       23489         84.42         1.22              81.64             10.43             49.43               54.23             88.20             2.05             4.67
+none-abl                             3       21569        102.63         1.63              97.65              2.77             72.20               74.93            119.38             1.51             3.00
+past-abl                             3       27329        104.95         0.54              99.01              0.86             72.17               78.64            119.86             3.01             3.00
+                         config                reference  mean_block_RMSE_diff  blocks_worse_than_reference  blocks  sign_test_p
+future-abl_sm5_hmark_anchor_rep future-abl_sm5_hmark_rep                -0.154                           25      51        1.000
+       future-abl_sm5_hmark_rep future-abl_sm5_hmark_rep                 0.000                            0      51        1.000
+           future-abl_small_mk5 future-abl_sm5_hmark_rep                 1.060                           29      51        0.401
+                     future-abl future-abl_sm5_hmark_rep                 1.245                           28      51        0.576
+                 future-abl_mk5 future-abl_sm5_hmark_rep                 1.325                           32      51        0.092
+               future-abl_small future-abl_sm5_hmark_rep                 1.522                           29      51        0.401
+    future-abl_small_mk5_anchor future-abl_sm5_hmark_rep                 2.232                           32      51        0.092
+              future-abl_noroll future-abl_sm5_hmark_rep                 2.361                           38      51        0.001
+future-abl_small_mk5_anchor_rep future-abl_sm5_hmark_rep                 2.480                           34      51        0.024
+                 future-abl_log future-abl_sm5_hmark_rep                 3.519                           28      51        0.576
+                       none-abl future-abl_sm5_hmark_rep                21.868                           48      51        0.000
+                       past-abl future-abl_sm5_hmark_rep                22.479                           45      51        0.000

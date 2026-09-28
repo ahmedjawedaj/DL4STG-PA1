@@ -1,0 +1,33 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{graphicx,booktabs,amsmath,amssymb,hyperref,enumitem,float}
+\setlist{nosep,leftmargin=*}
+\setlength{\parskip}{4pt}\setlength{\parindent}{0pt}
+\title{AI651 Deep Learning for Space, Time and Graphs\\Programming Assignment 1}
+\author{Ahmed Jawed}
+\date{October 2026}
+\begin{document}
+\maketitle
+\begin{center}
+\textbf{Code repository:} \url{https://github.com/ahmedjawedaj/DL4STG-PA1}
+\end{center}
+
+\noindent\textbf{Contents.} Task 1 (implementation, five responses, figures from the
+\texttt{PA1\_PRESET=full} run). Task 2 (Autoformer pipeline, validation, required
+optional-data ablation, submission). Generative-AI disclosure at the end.
+
+\input{task1_responses}
+\clearpage
+\input{task2}
+\clearpage
+\input{ai_disclosure}
+
+\section*{References}
+\begin{itemize}
+\item Wu, Xu, Wang, Long (2021). Autoformer: Decomposition Transformers with Auto-Correlation
+for Long-Term Series Forecasting. NeurIPS. Reference code: \url{https://github.com/thuml/Autoformer}.
+\item Vaswani et al.\ (2017). Attention Is All You Need.
+\item Zeng et al.\ (2023). Are Transformers Effective for Time Series Forecasting?
+\item Hyndman and Athanasopoulos. Forecasting: Principles and Practice.
+\end{itemize}
+\end{document}
