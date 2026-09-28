@@ -31,7 +31,7 @@ LABELS = {"none-abl": "no optional data", "past-abl": "past-only covariates",
           "future-abl_small_mk5": "  d16 + width-5 embedding",
           "future-abl_small_mk5_anchor": "  d16 + width-5 + last-value anchor",
           "future-abl_sm5_hmark_anchor_rep": "  d16 + width-5 + horizon marks + anchor",
-          "future-abl_sm5_hmark_rep": "  d16 + width-5 + horizon marks (submitted)"}
+          "future-abl_sm5_hmark_rep": "  d16 + width-5 + horizon marks (selected)"}
 SUBMITTED = "future-abl_sm5_hmark_rep"
 
 
@@ -74,7 +74,7 @@ def horizon_plot(runs):
     fig, ax = plt.subplots(figsize=(6.4, 2.6))
     for key, colour, label in (("none-abl", GRAY, "no optional data"),
                                ("past-abl", AQUA, "past-only covariates"),
-                               (SUBMITTED, ORANGE, "known-horizon covariates (submitted config)")):
+                               (SUBMITTED, ORANGE, "known-horizon covariates (selected config)")):
         curves = [np.sqrt(((p - t) ** 2).mean(0)) for _, p, t, _ in runs[key]]
         ax.plot(np.arange(1, 169), np.mean(curves, 0), color=colour, label=label)
     ax.set_xlabel("forecast step")
