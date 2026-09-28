@@ -30,9 +30,9 @@ LABELS = {"none-abl": "no optional data", "past-abl": "past-only covariates",
           "future-abl_small": "  d16",
           "future-abl_small_mk5": "  d16 + width-5 embedding",
           "future-abl_small_mk5_anchor": "  d16 + width-5 + last-value anchor",
-          "future-abl_sm5_hmark_anchor_rep": "  d16 + width-5 + horizon marks + anchor",
-          "future-abl_sm5_hmark_rep": "  d16 + width-5 + horizon marks (selected)"}
-SUBMITTED = "future-abl_sm5_hmark_rep"
+          "future-abl_sm5_hmark_anchor_rep": "  d16 + width-5 + horizon marks + anchor (selected)",
+          "future-abl_sm5_hmark_rep": "  d16 + width-5 + horizon marks"}
+SUBMITTED = "future-abl_sm5_hmark_anchor_rep"
 
 
 def load_runs(dirs):

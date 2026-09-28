@@ -19,14 +19,18 @@ From `Question 2 - Leaderboard/`:
 ```bash
 pip install "torch>=2.4" numpy pandas matplotlib
 python -m pa1q2.train --cov future --seed 0 --d-model 16 --d-ff 32 \
-  --mark-kernel 5 --horizon-mark 1 --pad replicate \
-  --stage final --out runs/final --tag final
+  --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate \
+  --stage final --out runs/final --tag final_anchor_rep
+python -m pa1q2.train --cov future --seed 1 --d-model 16 --d-ff 32 \
+  --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate \
+  --stage final --out runs/final --tag final_anchor_rep
 python -m pa1q2.train --cov future --seed 2 --d-model 16 --d-ff 32 \
-  --mark-kernel 5 --horizon-mark 1 --pad replicate \
-  --stage final --out runs/final --tag final_s2
-python -m pa1q2.submission runs/final/future-log0-ph1-L168-d16-s0-final.json \
-  runs/final/future-log0-ph1-L168-d16-s2-final_s2.json
+  --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate \
+  --stage final --out runs/final --tag final_anchor_rep
+python -m pa1q2.submission runs/final/future-log0-ph1-L168-d16-s0-final_anchor_rep.json \
+  runs/final/future-log0-ph1-L168-d16-s1-final_anchor_rep.json \
+  runs/final/future-log0-ph1-L168-d16-s2-final_anchor_rep.json
 ```
 
 The leaderboard forecast in `Question 2 - Leaderboard/submission/predictions.txt` is the
-average of the two per-model floored forecasts. Declaration: `P = 22594`, `E = 10`.
+average of the three per-model floored forecasts. Declaration: `P = 33891`, `E = 15`.

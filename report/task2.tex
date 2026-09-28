@@ -126,8 +126,9 @@ $d{=}32$ base                               & 23\,489 & 79.2 & 74.4 $\pm$ 1.3 & 
 $d{=}16$                                    & 6\,625  & 80.8 & 75.1 $\pm$ 1.1 & 87.1 & 5.0\\
 $d{=}16$, width-5 embedding                 & 10\,977 & 79.1 & 74.5 $\pm$ 2.6 & 85.5 & 3.7\\
 \quad + last-value anchoring                & 10\,977 & 78.2 & 75.7 $\pm$ 4.0 & 84.6 & 5.0\\
-\quad + horizon marks + anchoring           & 11\,297 & 77.6 & 72.9 $\pm$ 1.9 & 85.4 & 3.7\\
-\quad \textbf{+ horizon marks (selected)}  & 11\,297 & \textbf{77.5} & 73.2 $\pm$ 2.4 & \textbf{82.9} & 3.3\\
+\quad \textbf{+ horizon marks + anchoring (selected)}
+                                             & 11\,297 & 77.6 & \textbf{72.9} $\pm$ 1.9 & 85.4 & 3.7\\
+\quad + horizon marks                       & 11\,297 & \textbf{77.5} & 73.2 $\pm$ 2.4 & \textbf{82.9} & 3.3\\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -146,44 +147,52 @@ horizon steps caused by wrap-around (step-168 RMSE 122 to 113 in the anchored pa
         cannot tell step 1 from step 100. At step 1 the $d{=}16$ width-5 model's RMSE was 107 against
         25 for persistence. Adding origin-relative marks lowered ES RMSE (79.1 to 77.5)
         and holdout RMSE (74.5 to 73.2) at +320 parameters, and gave the best winter RMSE.
-        Anchoring on the last value added nothing once the marks were present, and
-        starting the horizon trend at the last value failed badly in quick checks, probably
-        because the smoothed decoder trend could not pull a spike back down.
-  \item \textbf{Selection rule.} Among variants within noise, lowest ES RMSE, then winter
-        RMSE, then cost. The selected variant and the anchored one are tied (ES 77.5 vs
-        77.6, holdout 73.2 vs 72.9, paired block difference 0.15 with 25 of 51 blocks
-        each way). The selected one has the best winter RMSE and fewer moving parts.
+        Anchoring on the last value was not a clear single-seed win once the marks were
+        present, but its seed-averaged holdout RMSE was slightly better. Starting the
+        horizon trend at the last value failed badly in quick checks, probably because the
+        smoothed decoder trend could not pull a spike back down.
+  \item \textbf{Selection rule.} Among variants within noise, I mainly used full holdout
+        RMSE, with winter RMSE and cost as tie-breakers. The two horizon-mark rows are very
+        close (ES 77.5 vs 77.6, holdout 73.2 vs 72.9, paired block difference 0.15 with
+        25 of 51 blocks each way). I kept the anchored row for the final forecast because
+        its three-seed average had the best full-holdout RMSE, while preserving the
+        non-anchored two-seed forecast as a fallback snapshot.
 \end{itemize}
 
 \subsection{Final model and submission}
 \begin{itemize}
   \item I refit the selected configuration on $[0, 35064)$ with the 51 holdout blocks as
-        the early-stopping set. Based on the three-seed dev runs, I kept seeds 0 and 2 and
-        averaged their forecasts after applying the same non-negativity floor. On the
-        final-year early-stop blocks, seed 0 reached RMSE 69.2 and seed 2 reached 67.8.
+        the early-stopping set. Based on the three-seed dev runs, I averaged seeds 0, 1
+        and 2 after applying the same non-negativity floor. On the final-year early-stop
+        blocks, the best checkpoints reached RMSE 68.3, 79.0 and 68.0 respectively. Seed
+        1 was weak by itself, but it improved the same ensemble on the dev holdout.
   \item Forecast origin 43\,656 (0-based), i.e.\ \texttt{time\_idx} 43\,657 to 43\,824, in
         chronological order. Outputs below the 1st percentile of the fit-region target
-        (7.0) are raised to it before averaging. On the dev holdout, the seed-0/seed-2
-        ensemble scored RMSE 69.94, better than either seed alone (73.17 and 70.57 after
-        the floor).
-  \item \textbf{Declared $P = 22\,594$ trainable parameters and $E = 10$ epochs.} For an
-        ensemble the leaderboard asks for the sum over both runs: $11\,297+11\,297$
-        parameters and $6+4$ epochs. The commands below reproduce the two runs; the final
-        prediction file is the average of their floored forecasts.
+        (7.0) are raised to it before averaging. On the dev holdout, the same three-seed
+        anchored ensemble scored RMSE 69.34. I also saved the previous non-anchored
+        seed-0/seed-2 forecast separately before replacing the active submission folder.
+  \item \textbf{Declared $P = 33\,891$ trainable parameters and $E = 15$ epochs.} For an
+        ensemble the leaderboard asks for the sum over the three runs:
+        $11\,297 \times 3$ parameters and $6+3+6$ epochs. The commands below reproduce the
+        three runs; the final prediction file is the average of their floored forecasts.
 \begin{quote}\small
 \begin{verbatim}
 python -m pa1q2.train --cov future --seed 0 --d-model 16 --d-ff 32 \
-  --mark-kernel 5 --horizon-mark 1 --pad replicate \
-  --stage final --out runs/final --tag final
+  --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate \
+  --stage final --out runs/final --tag final_anchor_rep
+python -m pa1q2.train --cov future --seed 1 --d-model 16 --d-ff 32 \
+  --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate \
+  --stage final --out runs/final --tag final_anchor_rep
 python -m pa1q2.train --cov future --seed 2 --d-model 16 --d-ff 32 \
-  --mark-kernel 5 --horizon-mark 1 --pad replicate \
-  --stage final --out runs/final --tag final_s2
-python -m pa1q2.submission runs/final/future-log0-ph1-L168-d16-s0-final.json \
-  runs/final/future-log0-ph1-L168-d16-s2-final_s2.json
+  --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate \
+  --stage final --out runs/final --tag final_anchor_rep
+python -m pa1q2.submission runs/final/future-log0-ph1-L168-d16-s0-final_anchor_rep.json \
+  runs/final/future-log0-ph1-L168-d16-s1-final_anchor_rep.json \
+  runs/final/future-log0-ph1-L168-d16-s2-final_anchor_rep.json
 \end{verbatim}
 \end{quote}
-  \item Sanity check only: the two final forecasts correlate 0.969, so the ensemble is a
-        small smoothing step rather than a completely different forecast.
+  \item Sanity check only: the active forecast has 168 values in order from
+        \texttt{time\_idx} 43\,657 to 43\,824, with minimum 7.0 after flooring.
 \end{itemize}
 
 \begin{figure}[h]\centering

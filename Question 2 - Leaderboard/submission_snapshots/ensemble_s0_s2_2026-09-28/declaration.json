@@ -1,26 +1,22 @@
 {
- "trainable_parameters_P": 33891,
- "epochs_E": 15,
+ "trainable_parameters_P": 22594,
+ "epochs_E": 10,
  "ensemble": [
-  "future-log0-ph1-L168-d16-s0-final_anchor_rep.json",
-  "future-log0-ph1-L168-d16-s1-final_anchor_rep.json",
-  "future-log0-ph1-L168-d16-s2-final_anchor_rep.json"
+  "future-log0-ph1-L168-d16-s0-final.json",
+  "future-log0-ph1-L168-d16-s2-final_s2.json"
  ],
  "output_floor": 7.0,
  "values_raised_to_floor_per_model": [
-  18,
-  21,
-  17
+  19,
+  16
  ],
  "best_epochs": [
   5,
-  1,
-  4
+  2
  ],
  "best_es_RMSE": [
-  68.31745385857042,
-  79.0499172670013,
-  67.96874878613025
+  69.20973897814386,
+  67.79487891101824
  ],
  "arguments": [
   {
@@ -47,42 +43,10 @@
    "es_stride": 24,
    "threads": 2,
    "out": "runs/final",
-   "tag": "final_anchor_rep",
+   "tag": "final",
    "rolling": "6,24",
    "mark_kernel": 5,
-   "anchor": 1,
-   "horizon_mark": 1,
-   "trend_init": "mean",
-   "pad": "replicate"
-  },
-  {
-   "cov": "future",
-   "seed": 1,
-   "stage": "final",
-   "log_target": 0,
-   "phase": 1,
-   "seq_len": 168,
-   "label_len": 48,
-   "d_model": 16,
-   "heads": 4,
-   "d_ff": 32,
-   "e_layers": 1,
-   "d_layers": 1,
-   "kernel": 25,
-   "factor": 1.0,
-   "dropout": 0.1,
-   "lr": 0.0003,
-   "batch": 64,
-   "max_epochs": 6,
-   "patience": 2,
-   "min_delta": 0.0025,
-   "es_stride": 24,
-   "threads": 2,
-   "out": "runs/final",
-   "tag": "final_anchor_rep",
-   "rolling": "6,24",
-   "mark_kernel": 5,
-   "anchor": 1,
+   "anchor": 0,
    "horizon_mark": 1,
    "trend_init": "mean",
    "pad": "replicate"
@@ -111,10 +75,10 @@
    "es_stride": 24,
    "threads": 2,
    "out": "runs/final",
-   "tag": "final_anchor_rep",
+   "tag": "final_s2",
    "rolling": "6,24",
    "mark_kernel": 5,
-   "anchor": 1,
+   "anchor": 0,
    "horizon_mark": 1,
    "trend_init": "mean",
    "pad": "replicate"
