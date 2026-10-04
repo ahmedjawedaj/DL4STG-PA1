@@ -1,447 +1,241 @@
-% ---------------------------------------------------------------------------
-% Task 2. Numbers: Question 2 - Leaderboard/results/{ablation_summary,paired_blocks,
-% baselines}.csv|json, runs/final/*.json, submission/declaration.json
-% ---------------------------------------------------------------------------
+% Results are preserved in Question 2 - Leaderboard/results/ and submission_snapshots/.
 \section{Task 2: Leaderboard Challenge}
 
-\subsection{Data and what it implies}
+\subsection{Data and forecasting setup}
+The task is to forecast 168 values of an anonymised, non-negative physical quantity
+from 43\,656 observed values. The original units, dates and identity are unavailable.
+Ten optional external variables cover both the history and forecast horizon;
+using their future values is explicitly permitted.
 \begin{itemize}
-  \item \textbf{Period recovery.} The spectrum and autocorrelation of the training target
-        show a clear 24-step cycle (mean profile peaks at phase 0--1, trough at 14--16). The
-        rest is broad low-frequency power with no single cycle dominating. Autocorrelation is
-        0.97 at lag 1, 0.40 at lag 24, 0.16 at 48 and about 0.02 by lag 96, so most of the
-        168-step horizon cannot be solved by short-lag persistence alone.
-  \item \textbf{Heavy tail.} Median 73, 99th percentile 418, maximum 994. The level changes
-        by an order of magnitude within days (Figure~\ref{fig:q2final}, left).
-  \item \textbf{Optional file.} Six continuous variables (A, B, C look like smooth
-        weather states, D, E, F are non-negative cumulative counters) and four one-hot
-        indicators. The strongest contemporaneous links to the target are D ($-0.35$ with
-        $\log(1+y)$), H ($-0.35$), A ($+0.31$) and I ($+0.23$). The file covers the hidden
-        168 steps, so it can enter as a \emph{known-in-advance} input.
+  \item \textbf{Short memory and heavy tails.} Target autocorrelation is 0.97 at lag 1,
+        0.40 at lag 24 and about 0.02 by lag 96. The median is 73, the 99th percentile
+        418 and the maximum 994. Persistence alone is therefore unlikely to forecast
+        the whole horizon well, and missing a few large peaks can dominate RMSE.
+  \item \textbf{Recovered periodicity.} The spectrum and autocorrelation show a
+        24-step cycle. I use index-derived sine/cosine features with periods 24 and
+        8\,766. Interpreting these as daily and yearly cycles is an assumption,
+        not something the anonymised timestamps establish.
+  \item \textbf{Processing.} The target and continuous inputs are globally
+        standardised using only the fit region. The non-negative variables D, E and F
+        use $\log(1+x)$. Inputs include the ten optional variables, their trailing
+        6- and 24-step means, and origin-relative marks ($h/168$ and $e^{-h/24}$).
+        Trailing features use external data only; no future target enters an input.
 \end{itemize}
 
-\subsection{Validation protocol}
+\subsection{Chronological validation}
 \begin{itemize}
-  \item Chronological three-way split into roughly year-long blocks (assuming the
-        24-step cycle is one day, so a year is about 8\,760 steps): fit on $[0, 26304)$,
-        early-stop on $[26304, 35064)$ (origins every 24 steps), compare designs on the
-        final block, whose last 8\,568 steps $[35088, 43656)$ are tiled by
-        \textbf{51 non-overlapping 168-step blocks}.
-  \item Every block starts at phase 0, exactly like the hidden block (43\,656 is a
-        multiple of 24), so per-step errors are comparable with the test week.
-  \item Every configuration is trained with \textbf{3 seeds}. I report the seed mean and
-        standard deviation, plus a paired per-block comparison (seed-averaged block
-        RMSE, exact two-sided sign test over the 51 blocks). Seed standard deviation
-        (0.6 to 4.2 RMSE, 10.4 for the log target) is as large as most design differences, so single-seed rankings were not used.
-  \item I also tracked the 16 blocks nearest the start and end of the final block, because
-        the hidden week has the same phase in the recovered 24-step cycle and may be closer
-        to those edge blocks than to the middle of the year.
-  \item The first submission was selected using historical validation. Its leaderboard
-        result prompted a review of the validation estimate and training coverage.
-        Subsequent comparisons use observed historical targets, not hidden labels or
-        repeated leaderboard attempts.
+  \item \textbf{Development split.} Fit on $[0,26304)$, early-stop on
+        $[26304,35064)$ (origins every 24 steps), and compare designs on
+        $[35088,43656)$: \textbf{51 non-overlapping 168-step blocks}.
+        All blocks start at the same phase of the 24-step cycle as the hidden horizon.
+  \item \textbf{Multiple seeds.} Each development configuration uses three seeds.
+        Tables report seed mean and standard deviation unless identified as ensemble
+        results. Paired block comparisons use the seed-averaged block errors.
+        Seed spread is comparable to many design gains, so single runs are insufficient.
+  \item \textbf{Second fold.} Later comparisons also fit on $[0,17520)$,
+        early-stop on $[17520,26304)$ and evaluate the next 52 weekly blocks.
+        The 16 edge weeks of the recent fold and 17 of the earlier fold are called
+        \emph{winter-like} below, based on the assumed yearly cycle. Their errors are
+        a useful stress test, but the season and hidden-week difficulty are uncertain.
+  \item \textbf{Selection.} The first submission used full-holdout RMSE, with cost
+        and edge-week performance as tie-breakers. Later changes were checked on both
+        folds, seeking a mean weekly edge-error reduction of at least 3 RMSE and wins
+        on at least 20 of 33 edge weeks. These development periods were reused during
+        model selection, so they are not an untouched final test.
 \end{itemize}
 
-\subsection{Model}
-Autoformer encoder-decoder written from scratch (\texttt{pa1q2/autoformer.py}),
-following Wu et al.\ (2021) and the structure of the public reference
-\texttt{thuml/Autoformer}, reusing the delay scoring and aggregation convention from
-Question 1.
+\subsection{Autoformer and initial design choices}
+The encoder-decoder is written in \path{pa1q2/autoformer.py}.
+It follows Wu et al. (2021), the public \path{thuml/Autoformer} implementation, and the delay-aggregation
+convention from Task 1. It contains both required mechanisms:
 \begin{itemize}
-  \item \textbf{Series decomposition}: centred moving average (kernel 25, replicate
-        padding) at the input and after every sublayer (2 per encoder layer, 3 per decoder
-        layer). The decoder accumulates the three extracted trends through a projection
-        into the trend path, which starts from the input trend (label part) and the window
-        mean (horizon part).
-  \item \textbf{Auto-Correlation}: FFT delay scores $R(\tau)$ from learned $q,k$,
-        top-$k$ delays with $k=\lfloor \ln L\rfloor$ ($k=5$ in the encoder, 5 in the
-        decoder), softmax weights and circular time-delay aggregation of $v$. It replaces
-        dot-product attention in encoder self, decoder self and decoder cross mixing.
-  \item Sizes: $L=168$ (one week), label length 48, \texttt{pred\_len} $=168$, one encoder
-        and one decoder layer, $d_\text{model}=16$, 4 heads, $d_\text{ff}=32$, dropout
-        0.1.
-  \item \textbf{Inputs}: the target (globally standardised on the fit region, no
-        log) as the value channel. Known-in-advance ``marks'' over the encoder window and
-        the whole decoder window: index-derived phase features ($\sin$/$\cos$ with periods
-        24 and 8\,766), the ten optional variables (D, E, F through $\log(1+x)$, all
-        standardised on the fit region), their trailing 6- and 24-step means, and two
-        origin-relative position features (steps since origin$/168$ and
-        $e^{-h/24}$).
-  \item Training: MSE on the standardised target, Adam, learning rate
-        $3\cdot10^{-4}$ halved every epoch (reference schedule), batch 64, gradient clip 1,
-        at most 6 epochs, early stopping with patience 2 on raw-scale RMSE. One epoch is a
-        full pass over every stride-1 window of the fit region.
+  \item \textbf{Progressive decomposition.} A centred moving average (kernel 25,
+        replicate padding) separates trend and residual at the input and after every
+        sublayer. Decoder trend contributions are accumulated through a projection.
+  \item \textbf{Auto-Correlation.} FFT-based scores from learned queries and keys
+        select $k=\lfloor\ln L\rfloor$ delays, followed by softmax-weighted circular
+        aggregation of values. This replaces pointwise attention in encoder self,
+        decoder self and decoder cross mixing.
+  \item \textbf{Initial training.} Context 168, label length 48, horizon 168, one
+        encoder and decoder layer, four heads, dropout 0.1, batch 64, gradient clip 1,
+        MSE on the standardised raw target. Adam starts at $3\cdot10^{-4}$, halves
+        each epoch, and stops with patience 2, at most six epochs. Final-model changes
+        are specified in Section~\ref{sec:final}.
 \end{itemize}
 
-\subsection{Optional-data ablation (required)}
-
+\subsection{Required optional-data ablation}
+Three seeds per configuration, $d_\text{model}=32$; ES is early-stopping RMSE and
+holdout covers 51 recent blocks.
 \begin{center}\small
-\begin{tabular}{lcccccc}
+\begin{tabular}{lrrrrrr}
 \toprule
-Optional data & Params & ES RMSE & Holdout RMSE & MAE & sMAPE & Winter RMSE\\
+Optional inputs & Params & ES RMSE & Holdout RMSE & MAE & sMAPE (\%) & Edge RMSE\\
 \midrule
-none                              & 21\,569 & 102.6 & 97.7 $\pm$ 2.8 & 72.2 & 74.9 & 119.4\\
-past only (encoder values)        & 27\,329 & 104.9 & 99.0 $\pm$ 0.9 & 72.2 & 78.6 & 119.9\\
-past + horizon (marks)            & 23\,489 & 79.2  & 74.4 $\pm$ 1.3 & 51.7 & 72.8 & 88.2\\
+None                  & 21\,569 & 102.6 & 97.7 $\pm$ 2.8 & 72.2 & 74.9 & 119.4\\
+Past only             & 27\,329 & 104.9 & 99.0 $\pm$ 0.9 & 72.2 & 78.6 & 119.9\\
+Past + horizon        & 23\,489 & 79.2  & 74.4 $\pm$ 1.3 & 51.7 & 72.8 & 88.2\\
 \bottomrule
 \end{tabular}
 \end{center}
-Same architecture ($d_\text{model}=32$ base), 3 seeds each, holdout = 51 blocks of the
-final year. Reference baselines on the same blocks: climatology 93.0, mean of the last
-week 97.9, persistence 147.7, direct ridge without covariates 87.7, direct ridge with
-known-horizon covariates 71.5 (about 311k weights).
-
+Reference holdout RMSEs are
+climatology 93.0, last-week mean 97.9, persistence 147.7, direct ridge without
+covariates 87.7, and direct ridge with known-horizon covariates 71.5.
 \begin{itemize}
-  \item \textbf{Known-horizon covariates are the main source of skill}: RMSE falls from
-        97.7 to 74.4 ($-24\%$), MAE from 72.2 to 51.7, winter RMSE from 119.4 to 88.2. Like for like
-        ($d{=}32$), the covariate model beats the no-data model on 44 of 51 blocks (sign
-        test $p\approx10^{-7}$). The selected small configuration beats it on 48 of 51.
-  \item \textbf{Past-only covariates do nothing} (99.0 vs 97.7, within seed noise). At a
-        168-step horizon, the conditions that drive the target \emph{during} the week
-        matter, not the ones before the origin. This is the answer to ``which portions''
-        and ``where they enter'': the horizon part must reach the decoder as a known input.
-  \item \textbf{Without optional data the Autoformer is worse than climatology} (97.7 vs
-        93.0). Its horizon trend starts at the window mean, which for this series is a
-        noisy estimate of the next week's level (the last-week mean alone scores 97.9).
-  \item Trailing 6/24-step covariate means help a little. Removing them raises mean block
-        RMSE by 1.1 and is worse on 34 of 51 blocks, but the pooled RMSE is almost unchanged.
+  \item \textbf{Horizon values matter.} Known-horizon inputs reduce RMSE by 24\%
+        (97.7 to 74.4), improve MAE and sMAPE, and beat the no-input model on 44 of 51
+        blocks (paired sign test $p\approx10^{-7}$). The effect is much larger than
+        the seed spread. External conditions during the forecast horizon carry useful
+        information beyond the target history.
+  \item \textbf{Past-only inputs did not help here.} Their 99.0 RMSE is close to
+        97.7 without external data. This supports feeding the known horizon to the
+        decoder, rather than relying on encoder history alone; it is not a claim that
+        past covariates are generally useless.
 \end{itemize}
 
 \begin{figure}[h]\centering
 \includegraphics[width=0.49\linewidth]{figures/q2_horizon.pdf}\hfill
 \includegraphics[width=0.49\linewidth]{figures/q2_example_week.pdf}
-\caption{Left: per-step holdout RMSE (seed mean). The known-horizon model is better at
-every step. The wave follows the 24-step cycle in variance because all blocks start at
-phase 0. Right: the most volatile late-year holdout week.}
+\caption{Left: per-step holdout RMSE (seed mean); the known-horizon model improves
+every step. Right: an example from the most volatile late-year holdout week.}
 \label{fig:q2horizon}
 \end{figure}
 
-\subsection{Other design decisions (all 3 seeds, same protocol)}
+\subsection{Which changes were worth keeping?}
 \begin{center}\small
-\begin{tabular}{lcccccc}
+\begin{tabular}{lrrr}
 \toprule
-Variant (all with known-horizon covariates) & Params & ES & Holdout & Winter & Epochs\\
+Initial variant (known-horizon inputs, three seeds) & Params & Holdout RMSE & Edge RMSE\\
 \midrule
-$d{=}32$ base                               & 23\,489 & 79.2 & 74.4 $\pm$ 1.3 & 88.2 & 5.3\\
-\quad $\log(1+y)$ target                    & 23\,489 & 84.4 & 81.6 $\pm$ 10.4 & 88.2 & 4.7\\
-\quad no trailing covariate means           & 22\,209 & 81.6 & 74.3 $\pm$ 0.6 & 88.6 & 5.7\\
-\quad width-5 covariate embedding           & 32\,193 & 79.7 & 74.0 $\pm$ 3.2 & 84.5 & 4.0\\
-$d{=}16$                                    & 6\,625  & 80.8 & 75.1 $\pm$ 1.1 & 87.1 & 5.0\\
-$d{=}16$, width-5 embedding                 & 10\,977 & 79.1 & 74.5 $\pm$ 2.6 & 85.5 & 3.7\\
-\quad + last-value anchoring                & 10\,977 & 78.2 & 75.7 $\pm$ 4.0 & 84.6 & 5.0\\
-\quad \textbf{+ horizon marks + anchoring (selected)}
-                                             & 11\,297 & 77.6 & \textbf{72.9} $\pm$ 1.9 & 85.4 & 3.7\\
-\quad + horizon marks                       & 11\,297 & \textbf{77.5} & 73.2 $\pm$ 2.4 & \textbf{82.9} & 3.3\\
+$d=32$ base                         & 23\,489 & 74.4 $\pm$ 1.3 & 88.2\\
+$d=32$, $\log(1+y)$ target          & 23\,489 & 81.6 $\pm$ 10.4 & 88.2\\
+$d=16$                              & 6\,625  & 75.1 $\pm$ 1.1 & 87.1\\
+$d=16$, width-5 input embedding     & 10\,977 & 74.5 $\pm$ 2.6 & 85.5\\
+\quad + horizon marks, no anchor   & 11\,297 & 73.2 $\pm$ 2.4 & 82.9\\
+\quad + horizon marks and anchor   & 11\,297 & 72.9 $\pm$ 1.9 & 85.4\\
 \bottomrule
 \end{tabular}
 \end{center}
-The two horizon-mark rows also use replicate instead of circular padding in the value
-embedding and decoder trend projection, which removed an error spike at the last
-horizon steps caused by wrap-around (step-168 RMSE 122 to 113 in the anchored pair).
 \begin{itemize}
-  \item \textbf{Raw vs log target.} Training on $\log(1+y)$ gives the best MAE (49.4)
-        and sMAPE (54.2) of any run but worse and unstable RMSE (81.6 $\pm$ 10.4). The
-        back-transform under-predicts the heavy peaks, and RMSE punishes those misses more
-        than MAE or sMAPE. Since ranking is by RMSE, I train on the raw scale.
-  \item \textbf{Size.} Halving the width (23k to 7k or 11k parameters) costs nothing
-        measurable. All covariate variants are within about 3 RMSE, inside seed spread,
-        so the cheaper model is preferred under the $\alpha P+\beta E$ penalty.
-  \item \textbf{Horizon position.} Autoformer has no positional encoding, so its decoder
-        cannot tell step 1 from step 100. At step 1 the $d{=}16$ width-5 model's RMSE was 107 against
-        25 for persistence. Adding origin-relative marks lowered ES RMSE (79.1 to 77.5)
-        and holdout RMSE (74.5 to 73.2) at +320 parameters, and gave the best winter RMSE.
-        Anchoring on the last value was not a clear single-seed win once the marks were
-        present, but its seed-averaged holdout RMSE was slightly better. Starting the
-        horizon trend at the last value failed badly in quick checks, probably because the
-        smoothed decoder trend could not pull a spike back down.
-  \item \textbf{Selection rule.} Among variants within noise, I mainly used full holdout
-        RMSE, with winter RMSE and cost as tie-breakers. The two horizon-mark rows are very
-        close (ES 77.5 vs 77.6, holdout 73.2 vs 72.9, paired block difference 0.15 with
-        25 of 51 blocks each way). I kept the anchored row for the final forecast because
-        its three-seed average had the best full-holdout RMSE, while preserving the
-        non-anchored two-seed forecast as a fallback snapshot.
+  \item \textbf{Raw target and a small model.} Log-target training improved MAE and
+        sMAPE but under-predicted large peaks and gave unstable RMSE. Halving model
+        width cost little measurable accuracy, so $d=16$ was preferable under the
+        parameter/epoch penalty. More parameters or epochs alone did not establish
+        a better model.
+  \item \textbf{Horizon marks.} Origin-relative features explicitly identify the
+        forecast step. Together with replicate padding they improved boundary errors
+        and holdout RMSE. Anchoring was a close comparison (72.9 versus 73.2), so the
+        anchored configuration was used for attempt 1, rather than claimed as a
+        decisive improvement.
+  \item \textbf{Negative results.} Refitting on more history, wider decomposition,
+        extra rolling features, winter-weighted loss and square-root targets did not
+        consistently improve edge weeks. A 27-model mixture improved recent-fold
+        RMSE only from 69.3 to 68.1, at $P=345\,435$, $E=122$; it was not submitted.
+        Full records remain in the repository.
 \end{itemize}
 
-\subsection{First submission (attempt 1, 29 September)}
-This was the model selected by the protocol above. It was later replaced by attempt 3
-(Section~\ref{sec:final}). The steps in between are kept because they explain the final
-design.
+\textbf{A more direct path for horizon inputs.} A covariate-only gradient-boosting
+baseline scored 57.0 overall and 70.5 on recent edge weeks, against 69.3 and 82.0 for
+the attempt-1 ensemble. This suggested that the horizon inputs held signal the
+sequence model was not fully using. One possible explanation is smoothing inside
+the decomposition/mixing path, but this mechanism was not isolated experimentally.
+I compared a nonlinear covariate embedding with an additive per-step covariate head:
+\begin{center}\small
+\begin{tabular}{llrrr}
+\toprule
+Fold & Three-seed ensemble & All-week RMSE & Edge RMSE & Edge weeks won\\
+\midrule
+Recent  & Attempt-1 configuration & 69.34 & 81.97 & --\\
+        & Covariate embedding MLP & 64.79 & 76.80 & 8/16\\
+        & Direct covariate head   & 61.68 & 74.97 & 12/16\\
+Earlier & Attempt-1 configuration & 77.43 & 106.13 & --\\
+        & Covariate embedding MLP & 74.36 & 102.48 & 12/17\\
+        & Direct covariate head   & 66.40 & 91.63 & 12/17\\
+\bottomrule
+\end{tabular}
+\end{center}
+Wins are relative to attempt 1 on the same blocks. The direct-head configuration
+reduced mean weekly edge RMSE by 8.3 and won 24 of 33 weeks across both folds.
+It also removes anchoring and changes the learning-rate schedule; these results
+support the combined configuration, not the head's isolated contribution.
+
+\subsection{Leaderboard results}
+\begin{center}\small
+\begin{tabular}{clrrrrr}
+\toprule
+Attempt & Model (three members) & RMSE & MAE & sMAPE (\%) & $P$ & $E$\\
+\midrule
+1 & Anchored Autoformer     & 81.56 & 60.96 & 57.81 & 33\,891 & 15\\
+2 & Covariate embedding MLP & 81.93 & 62.75 & 59.58 & 38\,979 & 16\\
+3 & Direct covariate head   & \textbf{62.95} & \textbf{46.31} & \textbf{49.63} & 53\,670 & 20\\
+\bottomrule
+\end{tabular}
+\end{center}
 \begin{itemize}
-  \item I refit the selected configuration on $[0, 35064)$ with the 51 holdout blocks as
-        the early-stopping set. Based on the three-seed dev runs, I averaged seeds 0, 1
-        and 2 after applying the same non-negativity floor. On the final-year early-stop
-        blocks, the best checkpoints reached RMSE 68.3, 79.0 and 68.0 respectively. Seed
-        1 was weak by itself, but it improved the same ensemble on the dev holdout.
-  \item Forecast origin 43\,656 (0-based), i.e.\ \texttt{time\_idx} 43\,657 to 43\,824, in
-        chronological order. Outputs below the 1st percentile of the fit-region target
-        (7.0) are raised to it before averaging. On the dev holdout, the same three-seed
-        anchored ensemble scored RMSE 69.34. I also saved the previous non-anchored
-        seed-0/seed-2 forecast separately before replacing the active submission folder.
-  \item \textbf{Attempt 1 declared $P = 33\,891$ trainable parameters and $E = 15$ epochs.}
-        For an ensemble the leaderboard asks for the sum over the three runs:
-        $11\,297 \times 3$ parameters and $6+3+6$ epochs. The commands below reproduce the
-        three runs. Its prediction file is the average of their floored forecasts and is
-        preserved in \path{submission_snapshots/attempt1_2026-09-29/}.
-\begin{quote}\small
-\begin{verbatim}
-python -m pa1q2.train --cov future --seed 0 --d-model 16 --d-ff 32 \
-  --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate \
-  --stage final --out runs/final --tag final_anchor_rep
-python -m pa1q2.train --cov future --seed 1 --d-model 16 --d-ff 32 \
-  --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate \
-  --stage final --out runs/final --tag final_anchor_rep
-python -m pa1q2.train --cov future --seed 2 --d-model 16 --d-ff 32 \
-  --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate \
-  --stage final --out runs/final --tag final_anchor_rep
-python -m pa1q2.submission runs/final/future-log0-ph1-L168-d16-s0-final_anchor_rep.json \
-  runs/final/future-log0-ph1-L168-d16-s1-final_anchor_rep.json \
-  runs/final/future-log0-ph1-L168-d16-s2-final_anchor_rep.json
-\end{verbatim}
-\end{quote}
+  \item Attempt 1 ranked fourth when submitted. Its 69.34 historical ensemble RMSE
+        did not predict the hidden-week result. Edge-week RMSE of 81.97 was closer,
+        consistent with seasonal difficulty, but neither estimate guarantees a rank.
+  \item Attempt 2 improved historical validation in both folds but did not improve
+        the scored week. A single 168-step block can disagree with a multi-block
+        estimate, especially for a heavy-tailed series.
+  \item Attempt 3 scored 62.96 after the efficiency penalty and ranked first at the
+        time (previous best 69.16). RMSE was 23\% below attempt 1. This is a reported
+        result, not a guarantee about later rankings or other weeks. Leaderboard
+        feedback prompted further historical checks; candidate selection used those
+        checks and early stopping, not access to hidden targets.
 \end{itemize}
-
-\textbf{First leaderboard result (29 September).} The submitted ensemble scored
-RMSE 81.5648, MAE 60.9561 and sMAPE 57.81\%, with score 81.5724 and rank 4 at that
-time. Its historical pooled RMSE of 69.34 was too optimistic for this particular
-week. The 16 edge-block RMSE was 81.97. Neither historical number establishes a
-leaderboard rank. The original values, weights and declaration are preserved in
-\path{submission_snapshots/attempt1_2026-09-29/}.
-
-\textbf{Refit check.} I tested whether using more recent history helped. For each
-seed, I chose the epoch count on the earlier early-stopping period, then trained
-from scratch on $[0,35064)$ for that count and evaluated the same 51 later weeks.
-The matching deployment candidates use all 43\,656 observed targets. These are
-retrospective development comparisons. The 51 weeks have already informed design
-choices.
-\begin{center}\small
-\begin{tabular}{lrr}
-\toprule
-Three-seed configuration or equal-weight mixture & RMSE & Edge-16 RMSE\\
-\midrule
-Original anchored configuration & 69.34 & 81.97\\
-Anchored refit & 69.68 & 82.27\\
-Unanchored refit & 69.61 & 81.53\\
-Original + anchored refit (six models) & 69.02 & 81.61\\
-Original + unanchored refit (six models) & 68.97 & 81.24\\
-\bottomrule
-\end{tabular}
-\end{center}
-The best new mixture improved 28/51 weeks, but its pooled gain was only 0.37 RMSE
-and was uncertain across weeks. I saved all candidates without replacing the
-first submission. Refitting alone was not a clear improvement. The six-model
-candidate would declare $P=67\,782$, $E=29$, counting both epoch selection and
-refitting. It has not been submitted.
-
-\textbf{Why 69 locally but 82 on the leaderboard.} The 16 edge blocks are the
-winter-like weeks at the start and end of the final year, the same season as the
-hidden week. On them the submitted configuration scored 81.97, almost exactly the
-leaderboard 81.56, so the gap is a season effect, not a bug. Winter weeks are also
-much noisier: their block RMSE ranged from 34 to 143 (mean 76, sd 31). The main
-error is under-predicted pollution peaks. On the winter blocks, the top 10\% of true
-values average 392 while the forecasts average 223, and the forecasts' spread is
-only 0.62 of the truth's. A linear rescaling fitted on the first 8 winter blocks and
-tested on the last 8 (and vice versa) made RMSE worse in both directions, so I did
-not add one.
-
-\textbf{Further variants (3 seeds each, same 51 weeks).} Each changes one setting
-of the non-anchored configuration and is scored as a floored three-seed average.
-\begin{center}\small
-\begin{tabular}{lrrr}
-\toprule
-Variant & RMSE & Edge-16 RMSE & Params\\
-\midrule
-Non-anchored base (horizon marks, width-5 embedding) & 70.32 & 80.35 & 11\,297\\
-Anchored (first submission's configuration) & 69.34 & 81.97 & 11\,297\\
-Decomposition kernel 49 instead of 25 & 69.72 & 80.47 & 11\,297\\
-Trailing covariate means 6, 24 and 72 steps & 70.94 & 80.61 & 12\,897\\
-Dropout 0 instead of 0.1 & 68.15 & 81.44 & 11\,297\\
-Early stopping on winter-like weeks only & 71.97 & 81.99 & 11\,297\\
-\bottomrule
-\end{tabular}
-\end{center}
-Against the first submission's configuration, every variant's paired change on the
-16 winter weeks averaged between $-1.4$ and $+1.1$ RMSE, with a week-to-week standard
-deviation of 4 to 9 and 5 to 10 weeks better out of 16. No variant is a clear
-improvement for a winter week on its own.
-
-\textbf{Second fold and a mixed ensemble.} To score winter weeks from two different years,
-I added a second development fold one cycle earlier (fit to 17\,520, early stop to 26\,304,
-score the next 52 weeks). Two targeted variants (a winter-weighted loss and a square-root
-target, 3 seeds each) changed the 33 winter weeks of both folds by $0.0$ and $-0.4$ RMSE on
-average, so neither passed the bar I set beforehand (at least 3 better, 20 of 33 weeks,
-both folds). Averaging all 27 development models across the 9 configurations did better:
-winter RMSE 79.4 against 82.0 for the first submission's configuration (better on 12 of 16
-weeks, mean weekly change $-2.4$, sd 4.4), and 68.1 against 69.3 over all 51 weeks. Leaving
-any single configuration out moves the winter RMSE by less than 0.3, so the gain comes
-from averaging many different models rather than one of them. The matching 27-model
-full-history ensemble is saved in \path{submission_snapshots/ensemble27_2026-09-29/} with
-$P = 345\,435$ and $E = 122$ (sums over members). Its forecast correlates 0.997 with the
-first submission, so any change on the hidden week will be small.
-
-\textbf{Peak-height features (negative result).} The visible leaderboard suggested the
-leader's advantage is in peak hours (its RMSE is 12 below the cluster at 81, its MAE only
-4.5 below). I added four accumulation features from the covariate file alone: hours since
-the last strong clearing-wind hour, the calm share of the trailing 48 and 120 hours, and
-the clearing-wind share of the trailing 72 hours. They correlate about 0.4 with the log
-target and helped the ridge baseline's winter weeks (92.1 to 89.9), but in the Autoformer
-they made both folds worse (fold A 79.1 vs 77.4, fold B 71.9 vs 69.3, winter weeks better
-in only 14 of 33). I did not use them.
-
-\textbf{What the leaderboard says, and a nonlinear covariate encoder.} Ranks 2 to 5 all
-sit at RMSE 81 to 83 with models from 6.6k to 446k parameters and 6 to 105 epochs, so
-size and training length do not separate entries. Rank 1 and rank 2 both have sMAPE near
-50 (my first submission: 57.8), which points to a model that is right in relative terms,
-and rank 1 also gets the peaks. Our log-target seeds have that MAE and sMAPE profile
-but worse RMSE, and a raw-plus-log blend gained 3.2 on the last winter yet lost 2.4 on the
-one before, so it was not used. Window-relative normalisation and a $d_\text{model}=8$
-model both failed the two-winter bar. What passed it was a change to how the covariates
-enter: a per-step two-layer MLP (34 inputs, 16 hidden units, GELU) added to the linear
-covariate embedding in encoder and decoder, so the model can respond to combinations of
-covariates rather than their weighted sum. Three seeds, both folds, floored averages:
-
-\begin{center}\small
-\begin{tabular}{lrrr}
-\toprule
-& All weeks & Winter weeks & Winter weeks won\\
-\midrule
-Last cycle, first-submission config       & 69.34 & 81.97 & \\
-Last cycle, covariate MLP                 & 64.79 & 76.80 & 8/16\\
-Cycle before, first-submission config     & 77.43 & 106.13 & \\
-Cycle before, covariate MLP               & 74.36 & 102.48 & 12/17\\
-\bottomrule
-\end{tabular}
-\end{center}
-Mean winter change $-3.2$ per week, better on 20 of 33 winter weeks and in both years,
-MAE 45 and sMAPE 53 on the last cycle, and top-decile winter peaks predicted at 261
-instead of 223 (truth 392). This is the only one of 19 variants that met the bar. The
-3-seed full-history ensemble (12\,993 parameters each, $P = 38\,979$, $E = 16$) is saved
-in \path{submission_snapshots/covmlp_s0_s1_s2_2026-09-29/}.
-
-\textbf{Second leaderboard result.} That ensemble was submitted as attempt 2 and scored
-RMSE 81.93, MAE 62.75 and sMAPE 59.58\%, against 81.56, 60.96 and 57.81\% for attempt 1.
-The leaderboard keeps the best attempt, so attempt 1 remains the scored entry. A change
-that improved two full years of held-out winter weeks did not improve the one scored week.
-Two well-validated models now sit at 81.6 and 81.9 on it, next to three other entries at
-81 to 83, which is the practical illustration of the handout's warning: one 168-step score
-carries far less evidence than a validation built from many such blocks, and it cannot be
-used to choose between models that the history rates as close.
-
-\textbf{Ceiling test and a direct covariate head.} To find out whether the covariate file
-holds more than the Autoformer extracts, I fitted a gradient-boosting regressor to each
-horizon hour's covariates alone (no sequence model). It scored 57.0 all-weeks and 70.5 on
-winter weeks on the last cycle, and 67.1 and 83.6 on the cycle before, against 69.3, 82.0,
-77.4 and 106.1 for the Autoformer. A plain per-hour MLP on the same inputs the Autoformer
-sees scored 58.3 and 76.5. So the signal is there, and the Autoformer loses it: the
-covariates enter through the embedding and then pass through the moving-average
-decompositions and the Auto-Correlation mixing, which smooth the hour-by-hour weather signal
-that sets the peaks. I therefore added a direct covariate head, a per-hour MLP
-(36 inputs, two hidden layers of 64, GELU) from each horizon hour's known inputs straight
-to that hour's output, added to the Autoformer forecast, with the decomposition and
-Auto-Correlation paths unchanged. Without anchoring and with a flat learning rate
-($10^{-3}$, 0.8 per epoch) so the head trains fully:
-
-\begin{center}\small
-\begin{tabular}{lrrr}
-\toprule
-& All weeks & Winter weeks & Winter weeks won\\
-\midrule
-Last cycle, first-submission config       & 69.34 & 81.97 & \\
-Last cycle, covariate head                & 61.68 & 74.97 & 12/16\\
-Cycle before, first-submission config     & 77.43 & 106.13 & \\
-Cycle before, covariate head              & 66.40 & 91.63 & 12/17\\
-\bottomrule
-\end{tabular}
-\end{center}
-Mean winter change $-8.3$ per week, better on 24 of 33 winter weeks, every seed better than
-every first-submission seed in both cycles, MAE 43 and sMAPE 49 to 52. Of seven final-stage
-seeds (fit on $[0, 35064)$, early stopping on the last year), three converged to a poor basin (early-stop RMSE 81 to 83 against
-60 to 66, same training loss). The candidate averages three of the good seeds, selected on
-the early-stopping set and declared as such: $P = 53\,670$, $E = 20$ (the discarded runs
-cost a further 17 epochs). Saved in \path{submission_snapshots/covhead_s2_s3_s4_2026-09-29/}.
-
-\textbf{Third leaderboard result.} Submitted as attempt 3, this ensemble scored RMSE
-62.95, MAE 46.31 and sMAPE 49.63\%, score 62.96, first place at the time (previous best on
-the board 69.16). Against attempt 1 that is a 23\% reduction in RMSE, in line with the
-8.3-point winter gain measured on two historical years. The lesson of the three attempts
-is the one the ceiling test made explicit: for this series the known-horizon covariates
-carry most of the signal, and the question is not how much sequence capacity the model has
-but whether the covariate signal reaches the output without being smoothed away.
 
 \subsection{Final submitted model (attempt 3)}\label{sec:final}
-The scored entry is attempt 3. Its files are the active \path{submission/} folder of the
-repository (\texttt{predictions.txt}, \texttt{predictions.csv}, \texttt{declaration.json})
-and the snapshot \path{submission_snapshots/covhead_s2_s3_s4_2026-09-29/}, which also holds
-the run records and the leaderboard result.
 \begin{itemize}
-  \item \textbf{Architecture.} The attempt-1 Autoformer, unchanged: series decomposition
-        (kernel 25, replicate padding) at the input and after every sublayer,
-        Auto-Correlation in all three mixers, $L=168$, label length 48,
-        \texttt{pred\_len} $=168$, one encoder and one decoder layer, $d_\text{model}=16$,
-        4 heads, $d_\text{ff}=32$, width-5 covariate embedding, origin-relative horizon
-        marks. Plus the direct covariate head: a per-hour MLP ($36 \to 64 \to 64 \to 1$,
-        GELU) from each horizon hour's known inputs, added to the Autoformer output.
-        No anchoring. 17\,890 trainable parameters per model.
-  \item \textbf{Training.} Fit on $[0, 35064)$, early stopping on the 51 holdout weeks
-        (patience 3, at most 10 epochs), Adam at $10^{-3}$ decayed by 0.8 per epoch, MSE on
-        the standardised target, gradient clip 1. Seven seeds (0 to 6) were trained. Seeds
-        2, 3, 4 reached early-stop RMSE 59.7, 65.8 and 63.7 (best epochs 4, 4, 3, so 7, 7
-        and 6 epochs run). Seeds 0, 1 and 6 stopped at 81 to 83 with the same training
-        loss, and seed 5 was not used so that the declared cost stays at three members.
-        Member selection used only the early-stopping set, never the leaderboard.
-  \item \textbf{Forecast.} The equal-weight average of the three members' forecasts after
-        each is floored at 7.0, the 1st percentile of the fit-region target. 168 values,
-        \texttt{time\_idx} 43\,657 first and 43\,824 last.
-  \item \textbf{Declared $P = 53\,670$ and $E = 20$.} $P = 3 \times 17\,890$, counted by
-        \texttt{count\_parameters} (trainable parameters only). $E = 7 + 7 + 6$ epochs
-        actually run by the three members, including the patience epochs after each best
-        checkpoint. The four discarded seeds cost a further 17 epochs and are reported here
-        but, as they produced no part of the forecast, are not in $E$. The
-        \texttt{submission.py} script rebuilds each member from its saved arguments, loads
-        the saved weights and asserts that the parameter count matches before writing
-        \texttt{declaration.json}, so both figures are reproducible from the repository.
+  \item \textbf{Architecture.} Autoformer with $L=168$, label length 48,
+        \texttt{pred\_len}=168, one encoder and decoder layer, $d_\text{model}=16$,
+        four heads, $d_\text{ff}=32$, kernel 25, dropout 0.1, width-5 covariate
+        embedding, replicate padding and horizon marks. A direct head
+        ($36\to64\to64\to1$, GELU) maps each step's known inputs to an additive
+        forecast correction. Decomposition and all three Auto-Correlation mixers
+        remain present. There is no last-value anchoring.
+  \item \textbf{Training and selection.} Fit on $[0,35064)$ and early-stop on the
+        51 recent blocks, with Adam at $10^{-3}$ decayed by 0.8 per epoch, patience 3,
+        at most ten epochs, batch 64, MSE and gradient clip 1. Of seven seeds (0--6),
+        seeds 2, 3 and 4 form the final ensemble, selected using the early-stopping
+        set. Their best RMSEs are 59.7, 65.8 and 63.7, at epochs 4, 4 and 3.
+        Seeds 0, 1 and 6 stopped at RMSE 81--83; seed 5 was also excluded to keep
+        the ensemble at three members. Selection adds uncertainty beyond an
+        unselected three-seed comparison.
+  \item \textbf{Forecast and cost.} Each member's forecast is floored at 7.0 (the
+        fit-region target's 1st percentile), then the three forecasts are averaged.
+        The 168 outputs cover \texttt{time\_idx} 43\,657--43\,824 in order.
+        $P=3\times17\,890=53\,670$ and $E=7+7+6=20$, including patience epochs;
+        there was no full-history refit. Four discarded runs used a further 17 epochs,
+        disclosed here but excluded from the submitted members' total.
+  \item \textbf{Reproduction.} The \path{submission/} folder holds the forecasts
+        and declaration. The declaration records all member arguments and epoch counts.
+        \texttt{pa1q2.submission} reloads weights and checks parameter counts.
+        Training/export commands are in the Task 2 README. Final snapshot:\\
+        \path{submission_snapshots/covhead_s2_s3_s4_2026-09-29/}.
 \end{itemize}
-Commands, from \path{Question 2 - Leaderboard/}, one per seed:
-\begin{quote}\small
-\begin{verbatim}
-python -m pa1q2.train --cov future --d-model 16 --d-ff 32 --mark-kernel 5 \
-  --horizon-mark 1 --pad replicate --cov-head 64 --lr 1e-3 --lr-decay 0.8 \
-  --max-epochs 10 --patience 3 --stage final --out runs/final_v9 \
-  --seed 2 --tag fin_head64            # repeat with --seed 3 and --seed 4
-python -m pa1q2.submission runs/final_v9/future-log0-ph1-L168-d16-s2-fin_head64.json \
-  runs/final_v9/future-log0-ph1-L168-d16-s3-fin_head64.json \
-  runs/final_v9/future-log0-ph1-L168-d16-s4-fin_head64.json
-\end{verbatim}
-\end{quote}
-\textbf{Honest limits.} Attempt 3 changed three things at once against attempt 1 (the head,
-no anchoring, the learning-rate schedule), and the run that isolates the head alone was not
-made. The head is also only as good as the optional file: without it the model falls back to
-the attempt-1 Autoformer. And one scored week is one sample. The 8.3-point winter gain over
-two historical years is the evidence I trust, and the leaderboard number agrees with it.
 
-\begin{figure}[h]\centering
-\includegraphics[width=0.49\linewidth]{figures/q2_final_forecast.pdf}\hfill
-\includegraphics[width=0.49\linewidth]{figures/q2_ablation.pdf}
-\caption{Left: last two observed weeks and the submitted forecast. Right: every run in the
-ablation (holdout RMSE, 51 blocks). Dashed and dotted lines are reference baselines.}
+\textbf{Limits and takeaway.} The final comparison changes the covariate head,
+anchoring and schedule together. It does not prove that smoothing caused the earlier
+errors. Development blocks were reused, the final members were selected on early
+stopping, and the hidden score covers only one week. The strongest finding is the
+large benefit of known-horizon inputs in the required multi-seed ablation. The final
+configuration makes better use of those inputs while keeping the Autoformer mechanisms.
+
+\clearpage
+\begin{figure}[ht]\centering
+\includegraphics[width=0.74\linewidth]{figures/q2_final_forecast.pdf}\\[4pt]
+\includegraphics[width=0.95\linewidth]{figures/q2_ablation.pdf}
+\caption{Top: last two observed weeks and the attempt-3 forecast. Bottom: initial
+ablation runs on 51 holdout blocks (dots are seeds, bars are means); reference lines
+show climatology and covariate ridge. The initial selected row refers to attempt 1.}
 \label{fig:q2final}
 \end{figure}
 
 \subsection{Short reflections}
-\begin{itemize}
-  \item \textbf{Q2.5 (one shot vs recursive).} The model is one-shot (direct). Errors do
-        not compound, but early steps are less sharp than persistence because the model is
-        optimizing all 168 steps together. Recursive rollout would make the first few steps
-        easier but would accumulate errors over a heavy-tailed week.
-  \item \textbf{Q2.6 (window normalisation).} Removing each window's level destroys the
-        absolute level, which here carries information (very high levels tend to decay
-        within days). Global scaling keeps it. Anchoring on the
-        last value did not help once position marks were present.
-  \item \textbf{Q2.7 (past vs known-horizon covariates).} The distinction changes where a
-        covariate enters. Here the same ten variables were worthless as past-only encoder
-        inputs and cut RMSE by 24\% when passed through the decoder marks.
-  \item \textbf{Q2.8 (no timestamps).} Calendar effects (weekday, holidays, heating
-        season start) are lost. The 24-step period was recovered from the spectrum and
-        autocorrelation and encoded from the integer index. The yearly encoding (8\,766
-        steps) is an assumption with weak support in the data. This is only
-        trustworthy because the sampling is uniform with no gaps, as the task guarantees.
-\end{itemize}
+The direct 168-step output avoids feeding forecast errors back into the model,
+although horizon errors can remain correlated. Global scaling preserves absolute
+level; restoring a window's level after relative normalisation would not by itself
+let the network condition on that level. Known-horizon inputs belong in the forecast
+path, as the optional-data ablation demonstrates. Integer indices allow recovered
+phase features on this regular grid, but they do not establish weekdays, holidays
+or a real calendar; the yearly interpretation remains an assumption.

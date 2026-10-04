@@ -1,19 +1,50 @@
 \section*{Generative AI use}
-I used Claude (Anthropic) as a coding and writing assistant, with occasional review passes
-from OpenAI Codex, in the way the course policy allows. It helped with the implementation
-cells in the Task 1 harness, the Task 2 pipeline and comparison scripts, first drafts of
-report text and tables from the saved results, and a check of the final files against the
-handout requirements (168 values in order, declared $P$ and $E$ matching the saved runs).
+I used Claude (Anthropic) for coding and report drafting, and OpenAI Codex for review,
+checks and revisions. Assistance covered the three Task 1 implementation cells,
+the Task 2 pipeline and comparison scripts, and draft explanations and tables from
+saved results. AI assistance also contributed to the final wording of this report.
 
-\textbf{My edits and checks.}
-\begin{itemize}
-  \item I read and tested the generated code, verified the notebook checks and Outputs, and
-        confirmed the numbers in every table against the saved CSV and JSON records.
-  \item The expected ordering in Response 1A and the prediction in Response 4(a) are mine
-        and were written before the corresponding Outputs were run.
-  \item For Task 2, I chose which variants to try, set the acceptance bar for a change
-        (better on 20 of 33 winter weeks in both folds), decided what to submit, and
-        selected the three members of the final ensemble on the early-stopping set.
-  \item I rewrote the drafted text in my own words, cut claims that no saved result
-        supported, and added the limits paragraph in Section~\ref{sec:final}.
-\end{itemize}
+\textbf{Prompts, outputs and edits.} These are actual prompts from my Codex review
+conversation, with line breaks normalised. Outputs below are summaries, not verbatim
+transcripts; the examples document the review stage rather than Claude's full history.
+
+\begin{enumerate}
+  \item \textbf{Prompt:} \textit{review the assignment and pdf report ensure its ready for
+        submission ensure its not part of github repo push latest code if its ready}
+
+        \textbf{Output summary:} Codex checked the report, executed notebook and
+        submission records, reported four passing leakage/epoch-accounting tests,
+        and verified 168 forecast values with $P=53\,670$, $E=20$.
+
+        \textbf{Edits/actions:} The compiled report PDF was removed from Git tracking
+        and ignored locally. The LaTeX source, figures and code remain in the
+        repository; the then-current source and code were pushed.
+
+  \item \textbf{Prompt:} \textit{is the 11 pages report good enough? or overkill? hows the
+        quality from a MS student report perspective?}
+
+        \textbf{Output summary:} Codex recommended shortening the experiment
+        history to roughly 8--9 pages, and identified overly
+        certain seasonal/mechanistic claims and missing prompt/output examples.
+
+        \textbf{Edits:} Intermediate variants and repeated commands were condensed
+        into comparison tables and short findings. Seasonal identity and smoothing
+        explanations were labelled as assumptions or hypotheses. The required
+        Task 1 responses, optional-data ablation and final-model details were retained.
+
+  \item \textbf{Prompt:} \textit{okay please fix as per your feedback tighten it and fix
+        that disclosure before submission}
+
+        \textbf{Output summary:} Codex revised the report source, added these
+        disclosure examples, enlarged the dense Task 2 ablation figure, and rebuilt
+        and visually checked the PDF.
+
+        \textbf{Edits:} This final shortening and disclosure revision were AI-assisted.
+        They changed the presentation, not the trained models, forecast values or
+        declared cost.
+\end{enumerate}
+
+\textbf{Checks and responsibility.} Numerical claims are tied to saved CSV/JSON
+records and notebook Outputs. The report discloses reused development periods,
+member selection and rejected runs instead of presenting them as independent test
+evidence. I remain responsible for the submitted code, results and explanations.
