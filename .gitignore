@@ -17,6 +17,7 @@ learning_notes/
 Question 2 - Leaderboard/submission_snapshots/**/*.pt
 
 # LaTeX build intermediates
+report/main.pdf
 report/*.aux
 report/*.log
 report/*.out
