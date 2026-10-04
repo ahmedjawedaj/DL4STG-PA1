@@ -1,50 +1,75 @@
 \section*{Generative AI use}
-I used Claude (Anthropic) for coding and report drafting, and OpenAI Codex for review,
-checks and revisions. Assistance covered the three Task 1 implementation cells,
-the Task 2 pipeline and comparison scripts, and draft explanations and tables from
-saved results. AI assistance also contributed to the final wording of this report.
-
-\textbf{Prompts, outputs and edits.} These are actual prompts from my Codex review
-conversation, with line breaks normalised. Outputs below are summaries, not verbatim
-transcripts; the examples document the review stage rather than Claude's full history.
+I used Claude (Anthropic, with code execution) as the main coding and drafting
+assistant, and OpenAI Codex for review, experiments and revisions. The assistance
+covered implementation, training scripts, result tables and report text. The examples
+below summarise the assignment work; prompts are \textbf{paraphrased}, not verbatim
+transcripts, and outputs are summaries of the produced code and saved results.
 
 \begin{enumerate}
-  \item \textbf{Prompt:} \textit{review the assignment and pdf report ensure its ready for
-        submission ensure its not part of github repo push latest code if its ready}
+  \item \textbf{Task 1 implementation and interpretation.}
 
-        \textbf{Output summary:} Codex checked the report, executed notebook and
-        submission records, reported four passing leakage/epoch-accounting tests,
-        and verified 168 forecast values with $P=53\,670$, $E=20$.
+        \textbf{Prompt summary:} Read the handout and notebook, complete the three
+        cells for attention forecasting, series decomposition and delay aggregation,
+        run the full preset, and draft the five responses using the numbered Outputs.
 
-        \textbf{Edits/actions:} The compiled report PDF was removed from Git tracking
-        and ignored locally. The LaTeX source, figures and code remain in the
-        repository; the then-current source and code were pushed.
+        \textbf{Output:} Implementations of the attention forecaster, endpoint-padded
+        moving-average decomposition and vectorised delay aggregation; an executed
+        notebook; and draft comparisons of ridge, attention and delay-based models.
 
-  \item \textbf{Prompt:} \textit{is the 11 pages report good enough? or overkill? hows the
-        quality from a MS student report perspective?}
+        \textbf{Edits/checks:} The notebook checks and full-preset Outputs were
+        verified. Responses were edited to explain the measured differences rather
+        than repeat the code, identify the population and split, and avoid treating
+        attention maps as proof of physical-period recovery.
 
-        \textbf{Output summary:} Codex recommended shortening the experiment
-        history to roughly 8--9 pages, and identified overly
-        certain seasonal/mechanistic claims and missing prompt/output examples.
+  \item \textbf{Task 2 forecasting pipeline.}
 
-        \textbf{Edits:} Intermediate variants and repeated commands were condensed
-        into comparison tables and short findings. Seasonal identity and smoothing
-        explanations were labelled as assumptions or hypotheses. The required
-        Task 1 responses, optional-data ablation and final-model details were retained.
+        \textbf{Prompt summary:} Build a small Autoformer with chronological
+        validation, preprocessing, optional-data ablation across multiple seeds,
+        plots, and a 168-value forecast with reproducible parameter and epoch counts.
 
-  \item \textbf{Prompt:} \textit{okay please fix as per your feedback tighten it and fix
-        that disclosure before submission}
+        \textbf{Output:} The \texttt{pa1q2} package for data handling, progressive
+        decomposition, Auto-Correlation, training, baselines, comparisons and export;
+        three-seed runs with no, past-only and known-horizon external inputs.
 
-        \textbf{Output summary:} Codex revised the report source, added these
-        disclosure examples, enlarged the dense Task 2 ablation figure, and rebuilt
-        and visually checked the PDF.
+        \textbf{Edits/checks:} Scaling and target windows were checked against the
+        chronological boundaries. Known-horizon external values were kept because
+        the handout permits them and the ablation supports them. Export and tests
+        check prediction order, target leakage and epoch accounting.
 
-        \textbf{Edits:} This final shortening and disclosure revision were AI-assisted.
-        They changed the presentation, not the trained models, forecast values or
-        declared cost.
+  \item \textbf{Model size, training and saved variants.}
+
+        \textbf{Prompt summary:} Preserve the current settings, weights and outputs,
+        save every variant, and try larger models or longer training to improve
+        accuracy before submitting.
+
+        \textbf{Output:} Saved candidate snapshots, a variant log, wider-model
+        trials and two- and three-seed ensemble comparisons.
+
+        \textbf{Edits/checks:} The wider trial was stopped when it remained worse
+        on early stopping. The compact anchored ensemble became attempt 1 based on
+        historical comparisons. Earlier forecasts were retained, and ensemble
+        parameters and epochs were summed rather than reported per member.
+
+  \item \textbf{Diagnosing the first result and improving horizon inputs.}
+
+        \textbf{Prompt summary:} Investigate why local RMSE near 69 became 81.56
+        on the leaderboard, preserve attempt 1, and test whether the external inputs
+        contain signal the Autoformer is not extracting.
+
+        \textbf{Output:} A forecast-reproduction audit, refit experiments, a second
+        historical fold, covariate baselines, a nonlinear input embedding and a direct
+        covariate head. The latter configuration won 24 of 33 edge weeks and became
+        attempt 3.
+
+        \textbf{Edits/checks:} The earlier rank prediction was corrected. Small or
+        inconsistent gains were rejected; final members were selected on early
+        stopping. The report distinguishes historical from leaderboard scores,
+        discloses reused validation blocks and discarded runs, and treats seasonal
+        identity and smoothing explanations as hypotheses. The head, anchoring and
+        learning-rate changes are reported together rather than attributed to the
+        head alone.
 \end{enumerate}
 
-\textbf{Checks and responsibility.} Numerical claims are tied to saved CSV/JSON
-records and notebook Outputs. The report discloses reused development periods,
-member selection and rejected runs instead of presenting them as independent test
-evidence. I remain responsible for the submitted code, results and explanations.
+Report revisions and checks were also AI-assisted. Tables were checked against saved
+CSV/JSON records; the final export contains 168 values with $P=53\,670$, $E=20$.
+I remain responsible for the submitted code, results and explanations.
