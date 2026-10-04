@@ -1,0 +1,13 @@
+{
+ "attempt": 3,
+ "submitted": "2026-09-30 12:58 PKT",
+ "RMSE": 62.9497,
+ "MAE": 46.3068,
+ "sMAPE": 49.63,
+ "params": 53670,
+ "epochs": 20,
+ "score": 62.9599,
+ "rank": 1,
+ "leaderboard_best": "this attempt is tagged Best",
+ "predictions_sha256_prefix": "2b9e3c561f6b169e"
+}

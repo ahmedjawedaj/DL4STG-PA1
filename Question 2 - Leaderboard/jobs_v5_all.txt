@@ -1,0 +1,6 @@
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --accum 1 --out runs/dev_v5 --seed 0 --fold A --tag v5_accum_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --accum 1 --out runs/dev_v5 --seed 1 --fold A --tag v5_accum_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --accum 1 --out runs/dev_v5 --seed 2 --fold A --tag v5_accum_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --accum 1 --out runs/dev_v5 --seed 0 --fold B --tag v5_accum_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --accum 1 --out runs/dev_v5 --seed 1 --fold B --tag v5_accum_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --accum 1 --out runs/dev_v5 --seed 2 --fold B --tag v5_accum_B

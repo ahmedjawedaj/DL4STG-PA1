@@ -1,40 +1,63 @@
 \section*{Generative AI use}
-I used Claude (Anthropic) and OpenAI Codex as assistants for this assignment.
+I used Claude (Anthropic, through the Claude app with code execution) as the main assistant
+and OpenAI Codex for review passes. The sessions ran from the handout release to the
+submission date. Below are the prompts (paraphrased, in the order given), what the tools
+produced, and what I changed or checked myself.
 
 \textbf{Prompts.}
 \begin{itemize}
-  \item I asked Claude to read the PA1 handout and notebook, complete the required
-        implementation cells, run the notebook on the full preset, and draft the Task 1
-        responses from the numbered outputs.
-  \item I asked Claude to build a small Autoformer solution for the leaderboard task,
-        including preprocessing, chronological validation, optional-data ablation,
-        multi-seed runs, plots, and the final 168-value submission string.
-  \item I asked Codex to review Claude's work against the assignment requirements,
-        check for over-engineering or non-student-like writing, verify the leaderboard
-        submission files, and make the final report submission-ready.
+  \item Task 1: ``Read the PA1 handout and the notebook, complete the three implementation
+        cells (\texttt{RawAttentionForecaster.forward}, \texttt{SeriesDecomposition.forward},
+        \texttt{aggregate\_delays}), run the notebook with \texttt{PA1\_PRESET=full}, and draft
+        the five responses from the numbered Outputs.''
+  \item Task 2, first build: ``Build a small from-scratch Autoformer for the leaderboard task
+        with a chronological validation split, the optional-data ablation across seeds, plots,
+        and the 168-value submission string with $P$ and $E$.''
+  \item Review: ``Check the work against every requirement in the handout, flag anything
+        that reads as over-engineered or not student-like, and verify the submission files.''
+        (Codex.)
+  \item After attempt 1 scored 81.56: ``Explain the gap between the historical 69 and the
+        leaderboard 82, keep attempt 1 intact, and test improvements only on historical
+        validation.'' This produced the refit check, the second fold, the variant table, the
+        27-model ensemble and the peak-feature negative result.
+  \item ``Find out whether the covariate file holds more than the Autoformer extracts.''
+        This produced the gradient-boosting ceiling test, the per-step covariate MLP
+        (attempt 2) and then the direct covariate head (attempt 3).
+  \item Study material for myself, not part of the graded work: ``Explain what each variant
+        does and draw its architecture'', ``make a quiz sheet from lecture 5''.
+  \item Final pass: ``Review the submission requirements and get the repository and the
+        report ready.'' This produced the final-model section, the updated README and this
+        disclosure draft.
 \end{itemize}
 
-\textbf{What the assistant produced.}
+\textbf{What the tools produced.}
 \begin{itemize}
-  \item Task 1: the three notebook implementations, the full-preset run, and first drafts
-        of Responses 1A--4 from the exported Outputs.
-  \item Task 2: the \texttt{pa1q2} package (data handling, from-scratch Autoformer,
-        training with resumable early stopping, baselines, aggregation, figures,
-        submission writer), the experiment plan and runs, and a first draft of this
-        section.
-  \item Final review: checks for missing fields, exact prediction count, declared
-        parameter and epoch values, and consistency between the report and saved outputs.
+  \item Task 1: the three notebook implementations, the full-preset run, and first drafts of
+        Responses 1A to 4 from the exported Outputs.
+  \item Task 2: the \texttt{pa1q2} package (data handling, Autoformer, training with
+        resumable early stopping, baselines, refit, fold comparison, figures, submission
+        writer), the job lists in \texttt{jobs\_*.txt}, every run in \texttt{results/} and
+        \texttt{submission\_snapshots/}, the tests, and the first drafts of every Task 2
+        paragraph and table.
+  \item Review passes: lists of missing fields, the check that \texttt{predictions.txt} has
+        168 values in order, and the parameter and epoch recount in \texttt{submission.py}.
 \end{itemize}
 
 \textbf{My edits and checks.}
 \begin{itemize}
-  \item I checked the notebook outputs, kept the full-preset figures and tables, and
-        edited the responses to focus on the required comparisons instead of only
-        describing the code.
-  \item For Task 2, I used my own validation split to choose the final model, kept the
-        optional-data ablation, and did not use the public leaderboard as a validation
-        signal.
-  \item I verified that \texttt{submission/predictions.txt} contains exactly 168 values
-        in chronological order and that the declared parameter count and epoch count
-        match the saved final run.
+  \item I read the notebook outputs and the exported CSVs and edited the Task 1 responses to
+        answer the questions asked rather than describe the code. The expected ordering in
+        Response 1A and the prediction in Response 4(a) are mine and were written before the
+        corresponding Outputs were run.
+  \item I decided which Task 2 variants to try next and which bar a variant had to pass
+        (at least 3 RMSE better on 20 of 33 winter weeks in both folds). I chose to keep
+        attempt 1 and to submit attempts 2 and 3, and I chose the three members of attempt 3
+        from the early-stopping set.
+  \item I checked that the active \texttt{submission/declaration.json} matches the
+        leaderboard entry ($P = 53\,670$, $E = 20$), that the 168 values are in chronological
+        order with minimum 7.0, and that the commands in Section~\ref{sec:final} match the
+        saved run arguments.
+  \item I cut the generated drafts down, removed claims I could not back with a saved
+        result, and added the ``honest limits'' paragraph on the confounded changes in
+        attempt 3.
 \end{itemize}

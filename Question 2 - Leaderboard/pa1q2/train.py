@@ -23,12 +23,13 @@ from . import data as D
 from .autoformer import Autoformer, count_parameters
 
 
-def build_arrays(cov: str, log_target: bool, fit_end: int, phase: bool, rolling=()):
+def build_arrays(cov: str, log_target: bool, fit_end: int, phase: bool, rolling=(),
+                 sqrt_target: bool = False, accum: bool = False):
     y, ext = D.load()
-    scaler = D.TargetScaler(log=log_target).fit(y[:fit_end])
+    scaler = D.TargetScaler(log=log_target, sqrt=sqrt_target).fit(y[:fit_end])
     z = np.zeros(D.N_TOTAL, np.float32)
     z[:D.N_HISTORY] = scaler.transform(y)            # hidden block stays 0 and is never read
-    covs = D.covariate_features(ext, stats_end=fit_end, rolling=rolling)
+    covs = D.covariate_features(ext, stats_end=fit_end, rolling=rolling, accum=accum)
     ph = D.phase_features() if phase else np.zeros((D.N_TOTAL, 0), np.float32)
     values = z[:, None]
     marks = ph
@@ -48,8 +49,9 @@ class Windows:
     """Vectorised window gathering; no window crosses its origin boundary."""
 
     def __init__(self, values, marks, seq_len, label_len, pred_len, anchor=False,
-                 horizon_mark=False):
+                 horizon_mark=False, window_norm=False):
         self.values, self.marks, self.anchor = values, marks, anchor
+        self.window_norm = window_norm
         self.enc = torch.arange(-seq_len, 0)
         self.dec = torch.arange(-label_len, pred_len)
         # known-in-advance position relative to the forecast origin (Autoformer itself has no
@@ -73,6 +75,15 @@ class Windows:
             x = x.clone()
             x[..., 0] = x[..., 0] - a
             target = target - a
+        if self.window_norm:
+            # window-relative normalisation (handout Q2.6): remove the encoder window's own
+            # mean and spread from the target channel and the target, restore afterwards
+            mu = x[:, :, 0].mean(1, keepdim=True)
+            sd = x[:, :, 0].std(1, keepdim=True) + 0.1
+            x = x.clone()
+            x[..., 0] = (x[..., 0] - mu) / sd
+            target = (target - mu) / sd
+            a = torch.cat([a + mu, sd], 1)                  # [B, 2]: offset, scale
         me, md = self.marks[enc], self.marks[dec]
         if self.enc_rel is not None:
             n = len(o)
@@ -81,13 +92,20 @@ class Windows:
         return x, me, md, target, a
 
 
+def restore(z, a):
+    """Undo anchoring / window normalisation: a is [B,1] offset or [B,2] offset and scale."""
+    if a.shape[1] == 2:
+        return z * a[:, 1:2] + a[:, :1]
+    return z + a
+
+
 @torch.no_grad()
 def predict(model, win, origins, batch=256):
     model.eval()
     out = []
     for i in range(0, len(origins), batch):
         x, me, md, _, a = win.batch(origins[i:i + batch])
-        out.append((model(x, me, md) + a).numpy())
+        out.append(restore(model(x, me, md), a).numpy())
     return np.concatenate(out)
 
 
@@ -129,6 +147,18 @@ def parser():
     p.add_argument("--anchor", type=int, default=0, help="1: forecast change from last value")
     p.add_argument("--horizon-mark", type=int, default=0, help="1: add origin-relative marks")
     p.add_argument("--trend-init", default="mean", choices=["mean", "last"])
+    p.add_argument("--fold", default="B", choices=["A", "B"],
+                   help="dev protocol: B fits to 26304 and scores the last cycle, A one cycle earlier")
+    p.add_argument("--winter-weight", type=float, default=1.0,
+                   help="loss weight for training windows whose target week is winter-like")
+    p.add_argument("--sqrt-target", type=int, default=0, help="1: model the square root of y")
+    p.add_argument("--accum", type=int, default=0, help="1: add stagnation / clear-out features")
+    p.add_argument("--window-norm", type=int, default=0, help="1: window-relative normalisation")
+    p.add_argument("--mark-mlp", type=int, default=0, help="hidden width of a nonlinear covariate encoder (0: linear)")
+    p.add_argument("--lr-decay", type=float, default=0.5, help="per-epoch learning-rate factor")
+    p.add_argument("--cov-head", type=int, default=0, help="hidden width of a direct per-hour covariate head (0: none)")
+    p.add_argument("--es-season", default="all", choices=["all", "winter"],
+                   help="winter: early-stop on winter-like weeks of the early-stopping year")
     p.add_argument("--pad", default="circular", choices=["circular", "replicate"],
                    help="padding of the value embedding and decoder trend projection")
     return p
@@ -157,24 +187,33 @@ def run(a, budget=None):
     tag = run_tag(a)
     if (out / f"{tag}.json").exists():
         return True
-    fit_end = D.FIT_END if a.stage == "dev" else D.ES_END
+    fold_fit, fold_es, test_start, test_end = D.fold_ranges(a.fold)
+    fit_end = fold_fit if a.stage == "dev" else D.ES_END
     rolling = tuple(int(w) for w in a.rolling.split(",") if w)
     y_raw, scaler, values, marks = build_arrays(a.cov, bool(a.log_target), fit_end, bool(a.phase),
-                                                rolling)
+                                                rolling, bool(a.sqrt_target), bool(a.accum))
     win = Windows(values, marks, a.seq_len, a.label_len, D.PRED_LEN, bool(a.anchor),
-                  bool(a.horizon_mark))
+                  bool(a.horizon_mark), bool(a.window_norm))
 
     train_origins = D.origins(0, fit_end, a.seq_len, 1)
     if a.stage == "dev":
-        es_origins = D.origins(D.FIT_END, D.ES_END, a.seq_len, a.es_stride)
-        test_origins = D.holdout_origins(a.seq_len)
+        es_origins = D.origins(fold_fit, fold_es, a.seq_len, a.es_stride)
+        test_origins = D.test_blocks(test_start, test_end)
+        es_start = fold_fit
     else:
         es_origins = D.holdout_origins(a.seq_len)
         test_origins = None
+        es_start = D.ES_END
+    if a.es_season == "winter":
+        # select the epoch on winter-like weeks only (first 59 and last 61 days of the
+        # early-stopping year), because the forecast week falls at the end of a year
+        day = (es_origins + D.PRED_LEN // 2 - es_start) // 24
+        es_origins = es_origins[(day < 59) | (day >= 304)]
 
     model = Autoformer(values.shape[1], marks.shape[1] + 2 * a.horizon_mark, a.seq_len, a.label_len, D.PRED_LEN,
                        a.d_model, a.heads, a.d_ff, a.e_layers, a.d_layers, a.kernel,
-                       a.dropout, a.factor, a.mark_kernel, a.pad, a.trend_init)
+                       a.dropout, a.factor, a.mark_kernel, a.pad, a.trend_init, a.mark_mlp,
+                       a.cov_head)
     params = count_parameters(model)
     opt = torch.optim.Adam(model.parameters(), lr=a.lr)
     gen = torch.Generator().manual_seed(a.seed)
@@ -196,13 +235,21 @@ def run(a, budget=None):
         epoch = st["epoch"] + 1
         t0 = time.time()
         for g in opt.param_groups:                        # reference lradj "type1"
-            g["lr"] = a.lr * 0.5 ** (epoch - 1)
+            g["lr"] = a.lr * a.lr_decay ** (epoch - 1)
         model.train()
         perm = torch.as_tensor(train_origins)[torch.randperm(len(train_origins), generator=gen)]
         total = 0.0
         for idx in perm.split(a.batch):
             x, me, md, target, _ = win.batch(idx)
-            loss = (model(x, me, md) - target).square().mean()
+            per_window = (model(x, me, md) - target).square().mean(1)
+            if a.winter_weight != 1.0:
+                # season-weighted loss: windows whose target week is winter-like count
+                # winter_weight times as much (the forecast week is a winter week)
+                w = torch.ones(len(idx))
+                w[torch.as_tensor(D.is_winter(idx.numpy()))] = a.winter_weight
+                loss = (w * per_window).sum() / w.sum()
+            else:
+                loss = per_window.mean()
             opt.zero_grad(set_to_none=True)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)

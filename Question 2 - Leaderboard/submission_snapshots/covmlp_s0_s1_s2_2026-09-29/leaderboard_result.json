@@ -1,0 +1,12 @@
+{
+ "attempt": 2,
+ "submitted": "2026-09-29 22:18 PKT",
+ "RMSE": 81.927,
+ "MAE": 62.7527,
+ "sMAPE": 59.58,
+ "params": 38979,
+ "epochs": 16,
+ "score": 81.9351,
+ "leaderboard_best": "attempt 1 (81.5648) still tagged Best",
+ "predictions_sha256": "bc6cba0063ea66ee1944dda119dabc10556c7dd28c3de9481b9b2d0a31fceedb"
+}

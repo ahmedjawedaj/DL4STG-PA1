@@ -1,0 +1,80 @@
+[
+ {
+  "config": "reference",
+  "foldA_all_RMSE": 77.43321876358847,
+  "foldA_winter_RMSE": 106.12615861658205,
+  "foldA_winter_mean_week_diff": 0.0,
+  "foldA_winter_weeks_better": "0/17",
+  "foldA_epochs": [
+   3,
+   3,
+   3
+  ],
+  "parameters": 11297,
+  "foldB_all_RMSE": 69.34367221479914,
+  "foldB_winter_RMSE": 81.97188195120555,
+  "foldB_winter_mean_week_diff": 0.0,
+  "foldB_winter_weeks_better": "0/16",
+  "foldB_epochs": [
+   4,
+   3,
+   4
+  ],
+  "winter_mean_week_diff": 0.0,
+  "winter_weeks_better": 0,
+  "winter_weeks": 33,
+  "passes_bar": false
+ },
+ {
+  "config": "v3_ww3",
+  "foldA_all_RMSE": 78.02462951730531,
+  "foldA_winter_RMSE": 108.0863631673232,
+  "foldA_winter_mean_week_diff": 1.1242996862976837,
+  "foldA_winter_weeks_better": "9/17",
+  "foldA_epochs": [
+   3,
+   3,
+   3
+  ],
+  "parameters": 11297,
+  "foldB_all_RMSE": 70.99235360367945,
+  "foldB_winter_RMSE": 79.6760251552472,
+  "foldB_winter_mean_week_diff": -1.2379099163118892,
+  "foldB_winter_weeks_better": "8/16",
+  "foldB_epochs": [
+   5,
+   5,
+   5
+  ],
+  "winter_mean_week_diff": -0.021014060422109345,
+  "winter_weeks_better": 17,
+  "winter_weeks": 33,
+  "passes_bar": false
+ },
+ {
+  "config": "v3_sqrt",
+  "foldA_all_RMSE": 76.78970629381418,
+  "foldA_winter_RMSE": 107.33302596417211,
+  "foldA_winter_mean_week_diff": 1.9917588537554054,
+  "foldA_winter_weeks_better": "8/17",
+  "foldA_epochs": [
+   3,
+   3,
+   3
+  ],
+  "parameters": 11297,
+  "foldB_all_RMSE": 66.99627004670607,
+  "foldB_winter_RMSE": 80.57188628901467,
+  "foldB_winter_mean_week_diff": -2.849064779897696,
+  "foldB_winter_weeks_better": "9/16",
+  "foldB_epochs": [
+   4,
+   6,
+   5
+  ],
+  "winter_mean_week_diff": -0.3553071504400377,
+  "winter_weeks_better": 17,
+  "winter_weeks": 33,
+  "passes_bar": false
+ }
+]

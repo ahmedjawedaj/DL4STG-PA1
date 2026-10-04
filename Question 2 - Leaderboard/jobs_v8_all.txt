@@ -1,0 +1,12 @@
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v8 --seed 0 --fold B --cov-head 32 --tag v8_head32_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v8 --seed 1 --fold B --cov-head 32 --tag v8_head32_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v8 --seed 2 --fold B --cov-head 32 --tag v8_head32_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v8 --seed 0 --fold A --cov-head 32 --tag v8_head32_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v8 --seed 1 --fold A --cov-head 32 --tag v8_head32_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v8 --seed 2 --fold A --cov-head 32 --tag v8_head32_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v8 --seed 0 --fold B --cov-head 64 --rolling 6,24,72 --accum 1 --tag v8_head64x_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v8 --seed 1 --fold B --cov-head 64 --rolling 6,24,72 --accum 1 --tag v8_head64x_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v8 --seed 2 --fold B --cov-head 64 --rolling 6,24,72 --accum 1 --tag v8_head64x_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v8 --seed 0 --fold A --cov-head 64 --rolling 6,24,72 --accum 1 --tag v8_head64x_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v8 --seed 1 --fold A --cov-head 64 --rolling 6,24,72 --accum 1 --tag v8_head64x_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v8 --seed 2 --fold A --cov-head 64 --rolling 6,24,72 --accum 1 --tag v8_head64x_A

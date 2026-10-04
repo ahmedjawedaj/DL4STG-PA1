@@ -1,0 +1,93 @@
+{
+ "args": {
+  "cov": "future",
+  "seed": 2,
+  "stage": "dev",
+  "log_target": 0,
+  "phase": 1,
+  "seq_len": 168,
+  "label_len": 48,
+  "d_model": 16,
+  "heads": 4,
+  "d_ff": 32,
+  "e_layers": 1,
+  "d_layers": 1,
+  "kernel": 49,
+  "factor": 1.0,
+  "dropout": 0.1,
+  "lr": 0.0003,
+  "batch": 64,
+  "max_epochs": 6,
+  "patience": 2,
+  "min_delta": 0.0025,
+  "es_stride": 24,
+  "threads": 4,
+  "out": "runs/dev_v2",
+  "tag": "w_k49",
+  "rolling": "6,24",
+  "mark_kernel": 5,
+  "anchor": 0,
+  "horizon_mark": 1,
+  "trend_init": "mean",
+  "pad": "replicate"
+ },
+ "parameters": 11297,
+ "epochs_run": 5,
+ "best_epoch": 3,
+ "best_es_RMSE": 78.50150644443502,
+ "curve": [
+  {
+   "epoch": 1,
+   "train_loss": 0.8179367301695347,
+   "RMSE": 78.8298780883252,
+   "MAE": 52.97400098973052,
+   "sMAPE": 69.902121617027,
+   "mean_block_RMSE": 67.93884036510926,
+   "epoch_seconds": 43.294087409973145
+  },
+  {
+   "epoch": 2,
+   "train_loss": 0.6467866353179076,
+   "RMSE": 79.28615936156561,
+   "MAE": 53.169485408487496,
+   "sMAPE": 70.68980746527824,
+   "mean_block_RMSE": 68.47465925624142,
+   "epoch_seconds": 28.371962547302246
+  },
+  {
+   "epoch": 3,
+   "train_loss": 0.6063343254289352,
+   "RMSE": 78.50150644443502,
+   "MAE": 52.32382251018945,
+   "sMAPE": 68.63664103529608,
+   "mean_block_RMSE": 67.85115189980324,
+   "epoch_seconds": 27.91103959083557
+  },
+  {
+   "epoch": 4,
+   "train_loss": 0.5913501667422771,
+   "RMSE": 78.84682445848024,
+   "MAE": 52.19143041114282,
+   "sMAPE": 69.41769590711841,
+   "mean_block_RMSE": 67.81381283987568,
+   "epoch_seconds": 27.37160015106201
+  },
+  {
+   "epoch": 5,
+   "train_loss": 0.5822158524223385,
+   "RMSE": 78.81684723909243,
+   "MAE": 52.10091454517503,
+   "sMAPE": 69.72897152052082,
+   "mean_block_RMSE": 67.80298026191309,
+   "epoch_seconds": 28.508644104003906
+  }
+ ],
+ "train_seconds": 155.45733380317688,
+ "holdout": {
+  "RMSE": 71.17735423032337,
+  "MAE": 48.500311642856325,
+  "sMAPE": 67.77492995580049,
+  "mean_block_RMSE": 62.63978443433245
+ },
+ "holdout_blocks": 51
+}

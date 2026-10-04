@@ -1,0 +1,102 @@
+{
+ "args": {
+  "cov": "future",
+  "seed": 1,
+  "stage": "dev",
+  "log_target": 0,
+  "phase": 1,
+  "seq_len": 168,
+  "label_len": 48,
+  "d_model": 16,
+  "heads": 4,
+  "d_ff": 32,
+  "e_layers": 1,
+  "d_layers": 1,
+  "kernel": 49,
+  "factor": 1.0,
+  "dropout": 0.1,
+  "lr": 0.0003,
+  "batch": 64,
+  "max_epochs": 6,
+  "patience": 2,
+  "min_delta": 0.0025,
+  "es_stride": 24,
+  "threads": 2,
+  "out": "runs/dev_v2",
+  "tag": "w_k49",
+  "rolling": "6,24",
+  "mark_kernel": 5,
+  "anchor": 0,
+  "horizon_mark": 1,
+  "trend_init": "mean",
+  "pad": "replicate"
+ },
+ "parameters": 11297,
+ "epochs_run": 6,
+ "best_epoch": 4,
+ "best_es_RMSE": 79.9369036032169,
+ "curve": [
+  {
+   "epoch": 1,
+   "train_loss": 0.8272513815727676,
+   "RMSE": 80.46674211521278,
+   "MAE": 54.905518648769785,
+   "sMAPE": 67.4801527811972,
+   "mean_block_RMSE": 69.23447333258939,
+   "epoch_seconds": 50.36364006996155
+  },
+  {
+   "epoch": 2,
+   "train_loss": 0.7021056171986488,
+   "RMSE": 80.30433201884156,
+   "MAE": 55.825118218534016,
+   "sMAPE": 68.67671771643455,
+   "mean_block_RMSE": 70.33009338798459,
+   "epoch_seconds": 50.14216351509094
+  },
+  {
+   "epoch": 3,
+   "train_loss": 0.6540563923980519,
+   "RMSE": 80.19409918414163,
+   "MAE": 56.11186647178313,
+   "sMAPE": 68.15355594519316,
+   "mean_block_RMSE": 70.36365567799479,
+   "epoch_seconds": 53.48759627342224
+  },
+  {
+   "epoch": 4,
+   "train_loss": 0.636442645427705,
+   "RMSE": 79.9369036032169,
+   "MAE": 56.063529927178436,
+   "sMAPE": 68.07427998759873,
+   "mean_block_RMSE": 70.16264430023128,
+   "epoch_seconds": 56.316001653671265
+  },
+  {
+   "epoch": 5,
+   "train_loss": 0.628045916022525,
+   "RMSE": 80.1746203863642,
+   "MAE": 56.366017310233545,
+   "sMAPE": 67.86757224099466,
+   "mean_block_RMSE": 70.44455315783092,
+   "epoch_seconds": 56.15675163269043
+  },
+  {
+   "epoch": 6,
+   "train_loss": 0.6245241837202412,
+   "RMSE": 80.00358049607289,
+   "MAE": 56.19376986953733,
+   "sMAPE": 67.9471974829826,
+   "mean_block_RMSE": 70.30131867344514,
+   "epoch_seconds": 61.158533811569214
+  }
+ ],
+ "train_seconds": 327.62468695640564,
+ "holdout": {
+  "RMSE": 76.94093081890476,
+  "MAE": 54.91415508122379,
+  "sMAPE": 68.29836958061875,
+  "mean_block_RMSE": 68.83784462819597
+ },
+ "holdout_blocks": 51
+}

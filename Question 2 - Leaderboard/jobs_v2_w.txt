@@ -1,0 +1,3 @@
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --out runs/dev_v2 --seed 0 --es-season winter --tag w_eswinter
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --out runs/dev_v2 --seed 1 --es-season winter --tag w_eswinter
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --out runs/dev_v2 --seed 2 --es-season winter --tag w_eswinter

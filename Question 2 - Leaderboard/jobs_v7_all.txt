@@ -1,0 +1,18 @@
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 0 --fold B --window-norm 1 --tag v7_wnorm_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 1 --fold B --window-norm 1 --tag v7_wnorm_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 2 --fold B --window-norm 1 --tag v7_wnorm_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 0 --fold A --window-norm 1 --tag v7_wnorm_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 1 --fold A --window-norm 1 --tag v7_wnorm_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 2 --fold A --window-norm 1 --tag v7_wnorm_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 0 --fold B --mark-mlp 16 --tag v7_mlp_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 1 --fold B --mark-mlp 16 --tag v7_mlp_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 2 --fold B --mark-mlp 16 --tag v7_mlp_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 0 --fold A --mark-mlp 16 --tag v7_mlp_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 1 --fold A --mark-mlp 16 --tag v7_mlp_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 2 --fold A --mark-mlp 16 --tag v7_mlp_A
+--cov future --d-model 8 --d-ff 16 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 0 --fold B --tag v7_d8_B
+--cov future --d-model 8 --d-ff 16 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 1 --fold B --tag v7_d8_B
+--cov future --d-model 8 --d-ff 16 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 2 --fold B --tag v7_d8_B
+--cov future --d-model 8 --d-ff 16 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 0 --fold A --tag v7_d8_A
+--cov future --d-model 8 --d-ff 16 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 1 --fold A --tag v7_d8_A
+--cov future --d-model 8 --d-ff 16 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v7 --seed 2 --fold A --tag v7_d8_A

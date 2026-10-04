@@ -53,7 +53,36 @@ def phase_features(n: int = N_TOTAL) -> np.ndarray:
     return np.stack(cols, 1).astype(np.float32)
 
 
-def covariate_features(ext: pd.DataFrame, stats_end: int, rolling=()) -> np.ndarray:
+def accumulation_features(ext: pd.DataFrame) -> np.ndarray:
+    """Four stagnation and clear-out features built from the covariate file alone.
+    feature_H is the wind direction with high speeds and low target levels (a clearing
+    wind), feature_J the calm one with the highest levels. Each feature at time t uses only
+    covariate rows up to t, and the file covers the horizon, so they are known in advance.
+        since_clear     hours since the last strong clearing-wind hour (H and D >= 20), cap 168
+        calm48, calm120 share of the trailing 48 / 120 hours that were calm (J or D < 3)
+        clear72         share of the trailing 72 hours with a strong clearing wind
+    """
+    n = len(ext)
+    h, j, d = (ext[c].to_numpy(np.float64) for c in ("feature_H", "feature_J", "feature_D"))
+    clear = (h == 1) & (d >= 20)
+    calm = (j == 1) | (d < 3)
+    since = np.empty(n)
+    last = -PRED_LEN
+    for t in range(n):
+        if clear[t]:
+            last = t
+        since[t] = min(t - last, PRED_LEN)
+
+    def trailing(x, w):
+        c = np.cumsum(np.r_[0, x])
+        i = np.arange(1, n + 1)
+        return (c[i] - c[np.maximum(i - w, 0)]) / w
+
+    return np.stack([since / PRED_LEN, trailing(calm, 48), trailing(calm, 120),
+                     trailing(clear, 72)], 1).astype(np.float32)
+
+
+def covariate_features(ext: pd.DataFrame, stats_end: int, rolling=(), accum: bool = False) -> np.ndarray:
     """Scale the ten optional variables using statistics from [0, stats_end) only.
     rolling: trailing-window lengths; each adds trailing means of all ten variables
     (computed from the covariate file alone, so no target information enters)."""
@@ -69,6 +98,8 @@ def covariate_features(ext: pd.DataFrame, stats_end: int, rolling=()) -> np.ndar
         idx = np.arange(1, len(base) + 1)
         lo = np.maximum(idx - w, 0)
         blocks.append((c[idx] - c[lo]) / (idx - lo)[:, None])
+    if accum:
+        blocks.append(accumulation_features(ext))
     feats = np.concatenate(blocks, 1)
     mu, sd = feats[:stats_end].mean(0), feats[:stats_end].std(0) + 1e-8
     return ((feats - mu) / sd).astype(np.float32)
@@ -76,23 +107,34 @@ def covariate_features(ext: pd.DataFrame, stats_end: int, rolling=()) -> np.ndar
 
 @dataclass
 class TargetScaler:
-    """Global (not per-window) scaling of the target, fitted on the fit region only."""
+    """Global (not per-window) scaling of the target, fitted on the fit region only.
+    Optional variance-stabilising transform: log1p or square root."""
     log: bool
     mu: float = 0.0
     sd: float = 1.0
+    sqrt: bool = False
+
+    def _forward(self, y):
+        if self.log:
+            return np.log1p(y)
+        return np.sqrt(np.clip(y, 0, None)) if self.sqrt else y
 
     def fit(self, y):
-        z = np.log1p(y) if self.log else y
+        z = self._forward(y)
         self.mu, self.sd = float(z.mean()), float(z.std())
         return self
 
     def transform(self, y):
-        z = np.log1p(y) if self.log else y
-        return ((z - self.mu) / self.sd).astype(np.float32)
+        return ((self._forward(y) - self.mu) / self.sd).astype(np.float32)
 
     def inverse(self, z):
         z = np.asarray(z, np.float64) * self.sd + self.mu
-        out = np.expm1(z) if self.log else z
+        if self.log:
+            out = np.expm1(z)
+        elif self.sqrt:
+            out = np.clip(z, 0, None) ** 2
+        else:
+            out = z
         return np.clip(out, 0, None)  # target is non-negative
 
 
@@ -100,6 +142,33 @@ def origins(start: int, end: int, seq_len: int, stride: int, pred_len: int = PRE
     """Forecast origins o (first predicted position) with target [o, o+pred_len) in [start, end)."""
     first = max(start, seq_len)
     return np.arange(first, end - pred_len + 1, stride)
+
+
+def season_day(origins):
+    """Day within an assumed 365.25-day cycle (24-step days) of each target block's centre."""
+    return ((np.asarray(origins) + PRED_LEN // 2) % YEAR) // 24
+
+
+def is_winter(origins):
+    """Winter-like: first 59 or last 61 days of the cycle, the season of the hidden week."""
+    day = season_day(origins)
+    return (day < 59) | (day >= 304)
+
+
+def fold_ranges(fold: str):
+    """(fit_end, es_end, test_start, test_end). Fold B is the main protocol. Fold A shifts
+    everything one cycle earlier so that a second, independent winter can be scored."""
+    if fold == "B":
+        return FIT_END, ES_END, ES_END, HOLDOUT_END
+    if fold == "A":
+        return 17520, FIT_END, FIT_END, ES_END
+    raise ValueError(fold)
+
+
+def test_blocks(test_start: int, test_end: int):
+    """Non-overlapping 168-step blocks tiling the end of [test_start, test_end)."""
+    n = (test_end - test_start) // PRED_LEN
+    return np.arange(test_end - n * PRED_LEN, test_end - PRED_LEN + 1, PRED_LEN)
 
 
 def holdout_origins(seq_len: int):

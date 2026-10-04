@@ -1,0 +1,3 @@
+--cov future --d-model 32 --d-ff 64 --log-target 1 --out runs/dev_v6 --seed 0 --fold A --tag v6_log_A
+--cov future --d-model 32 --d-ff 64 --log-target 1 --out runs/dev_v6 --seed 1 --fold A --tag v6_log_A
+--cov future --d-model 32 --d-ff 64 --log-target 1 --out runs/dev_v6 --seed 2 --fold A --tag v6_log_A

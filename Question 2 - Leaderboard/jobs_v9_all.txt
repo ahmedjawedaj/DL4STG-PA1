@@ -1,0 +1,6 @@
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --out runs/dev_v9 --cov-head 64 --lr 1e-3 --lr-decay 0.8 --max-epochs 10 --patience 3 --seed 0 --fold B --tag v9_head64_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --out runs/dev_v9 --cov-head 64 --lr 1e-3 --lr-decay 0.8 --max-epochs 10 --patience 3 --seed 1 --fold B --tag v9_head64_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --out runs/dev_v9 --cov-head 64 --lr 1e-3 --lr-decay 0.8 --max-epochs 10 --patience 3 --seed 2 --fold B --tag v9_head64_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --out runs/dev_v9 --cov-head 64 --lr 1e-3 --lr-decay 0.8 --max-epochs 10 --patience 3 --seed 0 --fold A --tag v9_head64_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --out runs/dev_v9 --cov-head 64 --lr 1e-3 --lr-decay 0.8 --max-epochs 10 --patience 3 --seed 1 --fold A --tag v9_head64_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --out runs/dev_v9 --cov-head 64 --lr 1e-3 --lr-decay 0.8 --max-epochs 10 --patience 3 --seed 2 --fold A --tag v9_head64_A

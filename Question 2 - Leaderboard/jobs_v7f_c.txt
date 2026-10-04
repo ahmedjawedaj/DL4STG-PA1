@@ -1,0 +1,1 @@
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --mark-mlp 16 --stage final --out runs/final_v7 --seed 0 --tag fin_mlp

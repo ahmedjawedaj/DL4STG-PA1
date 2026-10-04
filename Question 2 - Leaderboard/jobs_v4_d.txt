@@ -1,0 +1,15 @@
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --kernel 49 --seed 0 --tag fin_k49
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --kernel 49 --seed 1 --tag fin_k49
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --kernel 49 --seed 2 --tag fin_k49
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --dropout 0.0 --seed 0 --tag fin_do0
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --dropout 0.0 --seed 1 --tag fin_do0
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --dropout 0.0 --seed 2 --tag fin_do0
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --rolling 6,24,72 --seed 0 --tag fin_roll72
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --rolling 6,24,72 --seed 1 --tag fin_roll72
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --rolling 6,24,72 --seed 2 --tag fin_roll72
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --anchor 1 --winter-weight 3 --seed 0 --tag fin_ww3
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --anchor 1 --winter-weight 3 --seed 1 --tag fin_ww3
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --anchor 1 --winter-weight 3 --seed 2 --tag fin_ww3
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --anchor 1 --sqrt-target 1 --seed 0 --tag fin_sqrt
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --anchor 1 --sqrt-target 1 --seed 1 --tag fin_sqrt
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --anchor 1 --sqrt-target 1 --seed 2 --tag fin_sqrt

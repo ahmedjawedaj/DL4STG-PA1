@@ -1,0 +1,6 @@
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --out runs/dev_v2 --seed 0 --rolling 6,24,72 --tag w_roll72
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --out runs/dev_v2 --seed 1 --rolling 6,24,72 --tag w_roll72
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --out runs/dev_v2 --seed 2 --rolling 6,24,72 --tag w_roll72
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --out runs/dev_v2 --seed 0 --dropout 0.0 --tag w_do0
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --out runs/dev_v2 --seed 1 --dropout 0.0 --tag w_do0
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --out runs/dev_v2 --seed 2 --dropout 0.0 --tag w_do0

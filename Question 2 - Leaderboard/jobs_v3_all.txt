@@ -1,0 +1,15 @@
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v3 --seed 0 --fold A --tag v3_ref_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v3 --seed 1 --fold A --tag v3_ref_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v3 --seed 2 --fold A --tag v3_ref_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v3 --seed 0 --fold A --winter-weight 3 --tag v3_ww3_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v3 --seed 1 --fold A --winter-weight 3 --tag v3_ww3_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v3 --seed 2 --fold A --winter-weight 3 --tag v3_ww3_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v3 --seed 0 --fold B --winter-weight 3 --tag v3_ww3_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v3 --seed 1 --fold B --winter-weight 3 --tag v3_ww3_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v3 --seed 2 --fold B --winter-weight 3 --tag v3_ww3_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v3 --seed 0 --fold A --sqrt-target 1 --tag v3_sqrt_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v3 --seed 1 --fold A --sqrt-target 1 --tag v3_sqrt_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v3 --seed 2 --fold A --sqrt-target 1 --tag v3_sqrt_A
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v3 --seed 0 --fold B --sqrt-target 1 --tag v3_sqrt_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v3 --seed 1 --fold B --sqrt-target 1 --tag v3_sqrt_B
+--cov future --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --anchor 1 --pad replicate --out runs/dev_v3 --seed 2 --fold B --sqrt-target 1 --tag v3_sqrt_B

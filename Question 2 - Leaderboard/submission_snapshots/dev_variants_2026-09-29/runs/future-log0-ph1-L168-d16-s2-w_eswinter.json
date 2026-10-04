@@ -1,0 +1,76 @@
+{
+ "args": {
+  "cov": "future",
+  "seed": 2,
+  "stage": "dev",
+  "log_target": 0,
+  "phase": 1,
+  "seq_len": 168,
+  "label_len": 48,
+  "d_model": 16,
+  "heads": 4,
+  "d_ff": 32,
+  "e_layers": 1,
+  "d_layers": 1,
+  "kernel": 25,
+  "factor": 1.0,
+  "dropout": 0.1,
+  "lr": 0.0003,
+  "batch": 64,
+  "max_epochs": 6,
+  "patience": 2,
+  "min_delta": 0.0025,
+  "es_stride": 24,
+  "threads": 4,
+  "out": "runs/dev_v2",
+  "tag": "w_eswinter",
+  "rolling": "6,24",
+  "mark_kernel": 5,
+  "anchor": 0,
+  "horizon_mark": 1,
+  "trend_init": "mean",
+  "es_season": "winter",
+  "pad": "replicate"
+ },
+ "parameters": 11297,
+ "epochs_run": 3,
+ "best_epoch": 1,
+ "best_es_RMSE": 110.51505318233339,
+ "curve": [
+  {
+   "epoch": 1,
+   "train_loss": 0.7941526102521191,
+   "RMSE": 110.51505318233339,
+   "MAE": 74.66922687345908,
+   "sMAPE": 80.93835738980397,
+   "mean_block_RMSE": 97.37011553559073,
+   "epoch_seconds": 38.612451791763306
+  },
+  {
+   "epoch": 2,
+   "train_loss": 0.618693296653369,
+   "RMSE": 115.21485081408443,
+   "MAE": 77.61775388950727,
+   "sMAPE": 85.66901038596711,
+   "mean_block_RMSE": 101.42793336189709,
+   "epoch_seconds": 38.77240586280823
+  },
+  {
+   "epoch": 3,
+   "train_loss": 0.590885032560953,
+   "RMSE": 111.55969924307644,
+   "MAE": 75.2778230945598,
+   "sMAPE": 84.12313284835491,
+   "mean_block_RMSE": 98.80853356992985,
+   "epoch_seconds": 27.95309805870056
+  }
+ ],
+ "train_seconds": 105.3379557132721,
+ "holdout": {
+  "RMSE": 70.09477003380407,
+  "MAE": 49.615410020508875,
+  "sMAPE": 68.95258068429855,
+  "mean_block_RMSE": 62.424483473162056
+ },
+ "holdout_blocks": 51
+}

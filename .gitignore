@@ -7,6 +7,10 @@ Question 1/checkpoints/
 Question 2 - Leaderboard/runs/
 Question 2 - Leaderboard/_to_delete/
 _to_delete/
+tmp/
+
+# Personal study notes, not part of the submission
+learning_notes/
 
 # Local submission snapshots can include trained weights.
 # Keep the records/predictions available, but avoid publishing model state files.

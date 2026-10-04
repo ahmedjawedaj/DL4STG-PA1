@@ -1,0 +1,7 @@
+--cov future --stage final --out runs/final_v4 --d-model 32 --d-ff 64 --seed 0 --tag fin_d32
+--cov future --stage final --out runs/final_v4 --d-model 32 --d-ff 64 --seed 1 --tag fin_d32
+--cov future --stage final --out runs/final_v4 --d-model 32 --d-ff 64 --seed 2 --tag fin_d32
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --seed 0 --tag fin_smk5
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --seed 1 --tag fin_smk5
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --seed 2 --tag fin_smk5
+--cov future --stage final --out runs/final_v4 --d-model 16 --d-ff 32 --mark-kernel 5 --horizon-mark 1 --pad replicate --seed 1 --tag fin_base

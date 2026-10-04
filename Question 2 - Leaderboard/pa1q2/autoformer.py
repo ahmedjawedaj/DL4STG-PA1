@@ -109,19 +109,27 @@ class SeasonalLayerNorm(nn.Module):
 class DataEmbedding(nn.Module):
     """Value (token) embedding + known-input (mark) embedding, no positional encoding."""
 
-    def __init__(self, c_in, mark_dim, d_model, dropout, mark_kernel=1, pad="circular"):
+    def __init__(self, c_in, mark_dim, d_model, dropout, mark_kernel=1, pad="circular",
+                 mark_mlp=0):
         super().__init__()
         self.value = nn.Conv1d(c_in, d_model, 3, padding=1, padding_mode=pad, bias=False)
         # mark_kernel=1 is the reference linear time-feature embedding; >1 lets each step see
         # its neighbours' known inputs (zero padding: no wrap-around between horizon ends)
         self.mark = (nn.Conv1d(mark_dim, d_model, mark_kernel, padding=mark_kernel // 2,
                                bias=False) if mark_dim else None)
+        # optional nonlinear covariate encoder: a per-step two-layer MLP on the known inputs,
+        # so combinations of covariates (not only their sum) can shape the embedding
+        self.mark_mlp = (nn.Sequential(nn.Linear(mark_dim, mark_mlp), nn.GELU(),
+                                       nn.Linear(mark_mlp, d_model, bias=False))
+                         if mark_dim and mark_mlp else None)
         self.drop = nn.Dropout(dropout)
 
     def forward(self, x, mark):
         out = self.value(x.transpose(1, 2)).transpose(1, 2)
         if self.mark is not None:
             out = out + self.mark(mark.transpose(1, 2)).transpose(1, 2)
+        if self.mark_mlp is not None:
+            out = out + self.mark_mlp(mark)
         return self.drop(out)
 
 
@@ -164,13 +172,15 @@ class DecoderLayer(nn.Module):
 class Autoformer(nn.Module):
     def __init__(self, enc_in, mark_dim, seq_len=168, label_len=48, pred_len=168, d_model=32,
                  heads=4, d_ff=64, e_layers=1, d_layers=1, kernel=25, dropout=0.1, factor=1.0,
-                 mark_kernel=1, pad="circular", trend_init="mean"):
+                 mark_kernel=1, pad="circular", trend_init="mean", mark_mlp=0, cov_head=0):
         super().__init__()
         self.trend_init = trend_init
         self.seq_len, self.label_len, self.pred_len = seq_len, label_len, pred_len
         self.decomp = SeriesDecomp(kernel)
-        self.enc_embed = DataEmbedding(enc_in, mark_dim, d_model, dropout, mark_kernel, pad)
-        self.dec_embed = DataEmbedding(enc_in, mark_dim, d_model, dropout, mark_kernel, pad)
+        self.enc_embed = DataEmbedding(enc_in, mark_dim, d_model, dropout, mark_kernel, pad,
+                                       mark_mlp)
+        self.dec_embed = DataEmbedding(enc_in, mark_dim, d_model, dropout, mark_kernel, pad,
+                                       mark_mlp)
         self.encoder = nn.ModuleList([EncoderLayer(d_model, heads, d_ff, kernel, dropout, factor)
                                       for _ in range(e_layers)])
         self.enc_norm = SeasonalLayerNorm(d_model)
@@ -178,6 +188,14 @@ class Autoformer(nn.Module):
                                       for _ in range(d_layers)])
         self.dec_norm = SeasonalLayerNorm(d_model)
         self.projection = nn.Linear(d_model, 1)
+        # optional direct covariate head: a per-hour MLP from the known inputs of each horizon
+        # step straight to that step's output, added to the Autoformer forecast. The
+        # decomposition and Auto-Correlation paths are unchanged; they model what the
+        # covariates alone do not explain.
+        self.cov_head = (nn.Sequential(nn.Linear(mark_dim, cov_head), nn.GELU(),
+                                       nn.Linear(cov_head, cov_head), nn.GELU(),
+                                       nn.Linear(cov_head, 1))
+                         if mark_dim and cov_head else None)
 
     def forward(self, x_enc, mark_enc, mark_dec):
         """x_enc [B, seq_len, enc_in] (channel 0 = target); mark_enc [B, seq_len, m];
@@ -203,7 +221,10 @@ class Autoformer(nn.Module):
             dec, residual_trend = layer(dec, enc)
             trend_acc = trend_acc + residual_trend
         seasonal_out = self.projection(self.dec_norm(dec))
-        return (trend_acc + seasonal_out)[:, -self.pred_len:, 0]
+        out = (trend_acc + seasonal_out)[:, -self.pred_len:, 0]
+        if self.cov_head is not None:
+            out = out + self.cov_head(mark_dec[:, -self.pred_len:])[..., 0]
+        return out
 
 
 def count_parameters(model: nn.Module) -> int:

@@ -1,0 +1,14 @@
+{
+  "source": "User-provided screenshot, 2026-09-29",
+  "roll_number": "25280040",
+  "attempt": 1,
+  "rank_at_capture": 4,
+  "RMSE": 81.5648,
+  "MAE": 60.9561,
+  "sMAPE": 57.81,
+  "score": 81.5724,
+  "trainable_parameters_P": 33891,
+  "epochs_E": 15,
+  "predictions_sha256": "a5eba4fa48fc9f6c62ed17a623f06439ad2765b1f67620b58687cf3be308f4fd",
+  "note": "Aggregate feedback only. Hidden targets were not accessed. Do not use this score to tune forecast values."
+}

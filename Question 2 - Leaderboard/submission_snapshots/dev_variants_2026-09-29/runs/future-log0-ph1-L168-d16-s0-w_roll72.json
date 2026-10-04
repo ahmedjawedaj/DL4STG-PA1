@@ -1,0 +1,75 @@
+{
+ "args": {
+  "cov": "future",
+  "seed": 0,
+  "stage": "dev",
+  "log_target": 0,
+  "phase": 1,
+  "seq_len": 168,
+  "label_len": 48,
+  "d_model": 16,
+  "heads": 4,
+  "d_ff": 32,
+  "e_layers": 1,
+  "d_layers": 1,
+  "kernel": 25,
+  "factor": 1.0,
+  "dropout": 0.1,
+  "lr": 0.0003,
+  "batch": 64,
+  "max_epochs": 6,
+  "patience": 2,
+  "min_delta": 0.0025,
+  "es_stride": 24,
+  "threads": 2,
+  "out": "runs/dev_v2",
+  "tag": "w_roll72",
+  "rolling": "6,24,72",
+  "mark_kernel": 5,
+  "anchor": 0,
+  "horizon_mark": 1,
+  "trend_init": "mean",
+  "pad": "replicate"
+ },
+ "parameters": 12897,
+ "epochs_run": 3,
+ "best_epoch": 1,
+ "best_es_RMSE": 83.49533750855807,
+ "curve": [
+  {
+   "epoch": 1,
+   "train_loss": 0.7825546767210455,
+   "RMSE": 83.49533750855807,
+   "MAE": 60.05592505125199,
+   "sMAPE": 70.3478910305298,
+   "mean_block_RMSE": 74.7991493615887,
+   "epoch_seconds": 47.38475298881531
+  },
+  {
+   "epoch": 2,
+   "train_loss": 0.6304207230872958,
+   "RMSE": 85.40641008187986,
+   "MAE": 63.13805697268164,
+   "sMAPE": 70.67905572263035,
+   "mean_block_RMSE": 77.48720800074692,
+   "epoch_seconds": 43.6199951171875
+  },
+  {
+   "epoch": 3,
+   "train_loss": 0.6016865705097868,
+   "RMSE": 87.65344277524972,
+   "MAE": 66.0819303021839,
+   "sMAPE": 72.85727151649698,
+   "mean_block_RMSE": 80.76742729187399,
+   "epoch_seconds": 43.633774518966675
+  }
+ ],
+ "train_seconds": 134.63852262496948,
+ "holdout": {
+  "RMSE": 79.68037764102826,
+  "MAE": 58.76690420832895,
+  "sMAPE": 70.11519942206412,
+  "mean_block_RMSE": 72.20792421663927
+ },
+ "holdout_blocks": 51
+}

@@ -1,0 +1,54 @@
+[
+ {
+  "config": "reference",
+  "foldA_all_RMSE": 77.43321876358847,
+  "foldA_winter_RMSE": 106.12615861658205,
+  "foldA_winter_mean_week_diff": 0.0,
+  "foldA_winter_weeks_better": "0/17",
+  "foldA_epochs": [
+   3,
+   3,
+   3
+  ],
+  "parameters": 11297,
+  "foldB_all_RMSE": 69.34367221479914,
+  "foldB_winter_RMSE": 81.97188195120555,
+  "foldB_winter_mean_week_diff": 0.0,
+  "foldB_winter_weeks_better": "0/16",
+  "foldB_epochs": [
+   4,
+   3,
+   4
+  ],
+  "winter_mean_week_diff": 0.0,
+  "winter_weeks_better": 0,
+  "winter_weeks": 33,
+  "passes_bar": false
+ },
+ {
+  "config": "v5_accum",
+  "foldA_all_RMSE": 79.13019248459345,
+  "foldA_winter_RMSE": 107.1825367031775,
+  "foldA_winter_mean_week_diff": 3.002175642660514,
+  "foldA_winter_weeks_better": "7/17",
+  "foldA_epochs": [
+   3,
+   3,
+   3
+  ],
+  "parameters": 11937,
+  "foldB_all_RMSE": 71.8787050626566,
+  "foldB_winter_RMSE": 81.33739383732225,
+  "foldB_winter_mean_week_diff": 1.189667587419446,
+  "foldB_winter_weeks_better": "7/16",
+  "foldB_epochs": [
+   3,
+   3,
+   5
+  ],
+  "winter_mean_week_diff": 2.1233838583012083,
+  "winter_weeks_better": 14,
+  "winter_weeks": 33,
+  "passes_bar": false
+ }
+]
