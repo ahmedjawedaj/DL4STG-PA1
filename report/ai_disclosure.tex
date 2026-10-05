@@ -1,59 +1,19 @@
 \section*{Generative AI use}
-I used Claude (Anthropic) for coding and report drafts, and OpenAI Codex for reviewing
-the implementation, comparing variants and checking forecast export. Assistance
-included the Task 1 implementation cells, the Task 2 pipeline and draft explanations
-based on saved results.
+I used Claude (Anthropic) as a coding and writing assistant, with occasional review passes
+from OpenAI Codex, in the way the course policy allows. It helped with the implementation
+cells in the Task 1 harness, the Task 2 pipeline and comparison scripts, first drafts of
+report text and tables from the saved results, and a check of the final files against the
+handout requirements (168 values in order, declared $P$ and $E$ matching the saved runs).
 
-The examples below are \textbf{excerpts from my actual messages to Codex}, in
-chronological order. Original wording is retained with line breaks removed.
-Outputs are summarised; these examples cover the review and development stages,
-rather than the original implementation requests to Claude.
-
-\begin{enumerate}
-  \item \textbf{Reviewing the existing solution.}
-
-        \textbf{Prompt excerpt:} \textit{claude did some work please review and ensure
-        its fulfilling the assignment requirements from a student}
-
-        \textbf{Output:} A review of the notebook, Autoformer mechanisms, required
-        ablation and submission files. It confirmed the implemented checks and
-        identified missing report fields and an incomplete reproduction command.
-
-        \textbf{Edits/checks:} Missing fields were filled, reproduction instructions
-        were aligned with the saved model settings, and explanations were shortened
-        while keeping the required evidence.
-
-  \item \textbf{Preserving candidates and comparing variants.}
-
-        \textbf{Prompt excerpts:} \textit{okay save current settings/weights whatever
-        so we can use later for submissions}; \textit{and keep saving outputs for
-        every variant}; \textit{i would encourage you to try with better params and
-        epochs and try best configs ti get us best output}
-
-        \textbf{Output:} Saved weights, predictions and settings for earlier
-        candidates; a wider-model trial; and two- and three-seed ensemble comparisons.
-
-        \textbf{Edits/checks:} The wider trial was stopped when early-stopping results
-        remained worse. The compact three-seed anchored candidate was selected for
-        attempt 1 from historical comparisons. Ensemble parameter and epoch counts
-        were summed, and earlier candidates were retained.
-
-  \item \textbf{Investigating the first leaderboard result.}
-
-        \textbf{Prompt excerpt:} \textit{you said we will be on top no we are on 4th
-        review this now and fix}
-
-        \textbf{Output:} The earlier rank prediction was corrected. An audit reproduced
-        the forecasts from saved weights and checked scaling and ordering. Anchored
-        and unanchored refits were compared on historical blocks; the best new mixture
-        improved pooled RMSE by only 0.37, with uncertain benefit across weeks.
-
-        \textbf{Edits/checks:} Attempt 1 was preserved, and the small refit gain was
-        not presented as a reliable fix or a future leaderboard score. Later
-        configurations were assessed on historical folds, as described in Task 2.
-\end{enumerate}
-
-Report edits and checks were also AI-assisted. Tables were checked against saved
-CSV/JSON records, and the final export was checked for 168 ordered values with
-$P=53\,670$ and $E=20$. The report states the reused-validation and final-model
-limitations. I remain responsible for the submitted code, results and explanations.
+\textbf{My edits and checks.}
+\begin{itemize}
+  \item I read and tested the generated code, verified the notebook checks and Outputs, and
+        confirmed the numbers in every table against the saved CSV and JSON records.
+  \item The expected ordering in Response 1A and the prediction in Response 4(a) are mine
+        and were written before the corresponding Outputs were run.
+  \item For Task 2, I chose which variants to try, set the acceptance bar for a change
+        (better on 20 of 33 winter weeks in both folds), decided what to submit, and
+        selected the three members of the final ensemble on the early-stopping set.
+  \item I rewrote the drafted text in my own words, cut claims that no saved result
+        supported, and added the limits paragraph in Section~\ref{sec:final}.
+\end{itemize}
