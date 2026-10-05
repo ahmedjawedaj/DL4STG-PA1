@@ -21,7 +21,7 @@ delay scoring / aggregation convention from Question 1. See the report, Task 2.
 - `jobs_*.txt` the exact argument lists that were run
 - `runs/dev/` every dev-stage run (JSON record + holdout predictions), `runs/explore/`
   early single-seed exploration (older code, not used in the tables)
-- `runs/final/` the final model records and weights used for the ensemble
+- `runs/final/` attempt-1 records and weights; `runs/final_v9/` the submitted attempt-3 members
 - `results/` tables and figures, `submission/` the pasted values and the declaration
 
 ## Reproduce the submitted model (attempt 3)
@@ -94,15 +94,18 @@ Checks: `python -m unittest discover -s tests -v`.
 
 Completed checks: neither three-seed refit beat 69.34 historical RMSE. A six-model
 average scored 68.97, but its small gain was uncertain across weeks. All four new
-candidate bundles are preserved in `submission_snapshots/`; `submission/` remains
-the exact first attempt. No further submission is recommended from these results.
+candidate bundles are preserved in `submission_snapshots/`. At this stage,
+`submission/` still held attempt 1; the refit results did not justify another submission.
+The current submission is attempt 3, described above.
 
 ## Winter-slice check (29 September)
 
-The winter-like edge-16 weeks predicted the leaderboard well (81.97 locally vs 81.56).
+The winter-like edge-16 RMSE was close to attempt 1 (81.97 locally vs 81.56),
+but this does not establish the season or difficulty of the hidden week.
 Four one-change variants (kernel 49, 72-step trailing means, dropout 0, winter early
 stopping) did not improve winter weeks beyond noise. See
-`submission_snapshots/dev_variants_2026-09-29/README.md`. `submission/` is still attempt 1.
+`submission_snapshots/dev_variants_2026-09-29/README.md`. At this stage, attempt 1
+remained the submitted candidate.
 
 ## 27-model ensemble candidate (29 September)
 
@@ -117,9 +120,11 @@ submitted. See that folder's README and `experiment_notes/variants.md`.
 A per-step MLP on the known-horizon covariates (`--mark-mlp 16`) was the only one of 19
 variants to pass the pre-set two-winter bar (winter RMSE -3.2 per week on average, better
 on 20 of 33 winter weeks, better in both years, and better on all-week RMSE in both years).
-Its 3-seed full-history ensemble was submitted as attempt 2
+Its 3-seed final-stage ensemble (fit on [0, 35064), with later weeks used for early
+stopping) was submitted as attempt 2
 (`submission_snapshots/covmlp_s0_s1_s2_2026-09-29/`, P = 38979, E = 16) and scored RMSE 81.9270,
-worse than attempt 1 by 0.36. Attempt 1 remains the leaderboard entry. See that README. Other options added to `train.py` for the tests:
+worse than attempt 1 by 0.36. Attempt 1 remained the best entry until attempt 3.
+See that README. Other options added to `train.py` for the tests:
 `--fold A`, `--winter-weight`, `--sqrt-target`, `--accum`, `--window-norm`, `--mark-mlp`.
 
 ## Attempt 3 (30 September): rank 1
