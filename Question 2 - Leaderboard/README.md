@@ -24,51 +24,58 @@ delay scoring / aggregation convention from Question 1. See the report, Task 2.
 - `runs/final/` the final model records and weights used for the ensemble
 - `results/` tables and figures, `submission/` the pasted values and the declaration
 
-## Reproduce
+## Reproduce the submitted model (attempt 3)
 ```bash
 pip install "torch>=2.4" numpy pandas matplotlib
-# dev ablation (3 seeds per configuration), e.g. the submitted configuration
-python -m pa1q2.train --cov future --seed 0 --d-model 16 --d-ff 32 --mark-kernel 5 \
-    --horizon-mark 1 --anchor 1 --pad replicate --tag abl_sm5_hmark_anchor_rep
+# final members: seeds 2, 3 and 4 (seven seeds 0-6 were trained, see submission_snapshots)
+for s in 2 3 4; do
+python -m pa1q2.train --cov future --d-model 16 --d-ff 32 --mark-kernel 5 \
+    --horizon-mark 1 --pad replicate --cov-head 64 --lr 1e-3 --lr-decay 0.8 \
+    --max-epochs 10 --patience 3 --stage final --out runs/final_v9 \
+    --seed $s --tag fin_head64
+done
+python -m pa1q2.submission runs/final_v9/future-log0-ph1-L168-d16-s2-fin_head64.json \
+    runs/final_v9/future-log0-ph1-L168-d16-s3-fin_head64.json \
+    runs/final_v9/future-log0-ph1-L168-d16-s4-fin_head64.json
+# dev-stage ablation and figures (3 seeds per configuration)
 python -m pa1q2.baselines
 python -m pa1q2.aggregate runs/dev --reference future-abl_sm5_hmark_anchor_rep
 python -m pa1q2.figures runs/dev
-# final models used for the submission ensemble
-python -m pa1q2.train --cov future --seed 0 --d-model 16 --d-ff 32 --mark-kernel 5 \
-    --horizon-mark 1 --anchor 1 --pad replicate --stage final --out runs/final --tag final_anchor_rep
-python -m pa1q2.train --cov future --seed 1 --d-model 16 --d-ff 32 --mark-kernel 5 \
-    --horizon-mark 1 --anchor 1 --pad replicate --stage final --out runs/final --tag final_anchor_rep
-python -m pa1q2.train --cov future --seed 2 --d-model 16 --d-ff 32 --mark-kernel 5 \
-    --horizon-mark 1 --anchor 1 --pad replicate --stage final --out runs/final --tag final_anchor_rep
-python -m pa1q2.submission runs/final/future-log0-ph1-L168-d16-s0-final_anchor_rep.json \
-    runs/final/future-log0-ph1-L168-d16-s1-final_anchor_rep.json \
-    runs/final/future-log0-ph1-L168-d16-s2-final_anchor_rep.json
+python -m unittest discover -s tests
 ```
+The exact argument list of every run is in `jobs_*.txt` (`jobs_v9f_c.txt` and
+`jobs_v9_all.txt` are the attempt-3 final runs).
 
 ## Submission
 - Values: `submission/predictions.txt` (168 values, time_idx 43657 first, 43824 last)
-- Trainable parameters P = 53670, epochs E = 20 (see `submission/declaration.json`)
+- Trainable parameters P = 53670 (3 x 17890), epochs E = 20 (7 + 7 + 6 epochs run by the
+  three members, including patience epochs). See `submission/declaration.json`, which
+  `pa1q2.submission` writes after reloading each member's weights and asserting that its
+  parameter count matches the run record.
+- Model: the attempt-1 Autoformer plus a direct per-hour covariate head (`--cov-head 64`),
+  no anchoring, Adam 1e-3 decayed by 0.8 per epoch. 17890 parameters per member.
 - Output floor: values below the 1st percentile of the fit-region target (7.0) are raised
   to it per model before averaging.
-- The submitted file averages the floored seed-0, seed-1 and seed-2 anchored final
-  forecasts. On the dev holdout, the same three-seed average scored RMSE 69.34. The
-  previous two-seed non-anchor fallback is saved in
-  `submission_snapshots/ensemble_s0_s2_2026-09-28/`.
+- Member selection: seven final-stage seeds were trained, seeds 2, 3 and 4 were chosen on
+  the early-stopping set (RMSE 59.7, 65.8, 63.7). Full notes and the leaderboard result in
+  `submission_snapshots/covhead_s2_s3_s4_2026-09-29/README.md`.
 
 ## Splits (0-based positions)
 fit [0, 26304), early stop [26304, 35064), holdout [35064, 43656) = 51 blocks of 168.
 Final model: fit [0, 35064), early stop on the 51 holdout blocks.
 
-## Actual leaderboard result
+## Leaderboard results
 
-Attempt 1 (29 September): RMSE **81.5648**, MAE **60.9561**, sMAPE **57.81%**,
-score **81.5724**, rank **4** in the supplied screenshot. The exact predictions,
-declaration, run records, and local weights are saved in
-`submission_snapshots/attempt1_2026-09-29/`.
+| Attempt | Model | P | E | RMSE | MAE | sMAPE | Snapshot |
+|---|---|---:|---:|---:|---:|---:|---|
+| 1 (29 Sep) | anchored Autoformer, seeds 0, 1, 2 | 33891 | 15 | 81.5648 | 60.9561 | 57.81% | `submission_snapshots/attempt1_2026-09-29/` |
+| 2 (29 Sep) | + covariate embedding MLP | 38979 | 16 | 81.93 | 62.75 | 59.58% | `submission_snapshots/covmlp_s0_s1_s2_2026-09-29/` |
+| 3 (30 Sep) | + direct covariate head, no anchor, seeds 2, 3, 4 | 53670 | 20 | **62.9497** | 46.3068 | 49.63% | `submission_snapshots/covhead_s2_s3_s4_2026-09-29/` |
 
-The historical 69.34 RMSE is pooled over 51 weeks using models trained from an
-earlier cutoff. It is not the expected score of a particular hidden week or a
-guarantee of rank. The edge-16 historical RMSE was 81.97.
+Attempt 3 is the scored entry (rank 1 at submission). Attempt 1's historical 69.34 RMSE is
+pooled over 51 weeks using models trained from an earlier cutoff. It is not the expected
+score of a particular hidden week. Its edge-16 (winter-like) historical RMSE was 81.97,
+close to the leaderboard result.
 
 ## Refit checks
 
