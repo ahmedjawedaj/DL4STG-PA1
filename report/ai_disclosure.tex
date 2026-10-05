@@ -5,6 +5,44 @@ cells in the Task 1 harness, the Task 2 pipeline and comparison scripts, first d
 report text and tables from the saved results, and a check of the final files against the
 handout requirements (168 values in order, declared $P$ and $E$ matching the saved runs).
 
+\textbf{Prompt summaries, assistance and follow-up.}
+The questions below are retrospective paraphrases of the AI-assisted workflow, not
+verbatim chat excerpts. They summarise the reasoning behind the experiments rather
+than reproduce the full conversation.
+\begin{enumerate}
+  \item \textbf{Understanding Autoformer:} How do decomposition and AutoCorrelation
+        work, and how can the supplied future inputs help with the 168-step forecast?
+        The assistance explained the model components and helped with implementation.
+        The resulting code was checked against the required architecture and notebook tests.
+  \item \textbf{Interpreting submission 1:} Why did historical RMSE of 69.34 become
+        81.56 on the leaderboard? Could this be an export error or uneven performance
+        across weeks? The audit reproduced the forecasts from saved weights and compared
+        weekly errors. The report was corrected to distinguish historical performance
+        from an unseen-week result; the earlier expectation of first place was not justified.
+  \item \textbf{Choosing the next experiments:} Would more parameters or epochs help,
+        or were the large errors pointing to another limitation? The assistance proposed
+        capacity, refit and feature variants, and examined historical peak errors.
+        Small or inconsistent gains were not treated as fixes. A second chronological
+        fold and paired weekly comparisons were added to strengthen the evidence.
+  \item \textbf{Learning from submission 2:} Why did a nonlinear input embedding
+        improve both historical folds but not the submitted week? The comparisons showed
+        20 of 33 difficult-period weeks improved, while leaderboard RMSE rose to 81.93.
+        This negative result was retained in the report rather than presented as a
+        successful change; historical gains were not taken as a guarantee.
+  \item \textbf{Reconsidering the input path:} Could a simpler model use the future
+        inputs more effectively, and what would that suggest for Autoformer?
+        Diagnostic MLP and boosting comparisons motivated a direct covariate head.
+        These comparators were not submitted. The report treats suppression of input
+        information as a hypothesis, not an established cause.
+  \item \textbf{Selecting submission 3:} Does the revised approach improve across
+        periods and seeds, and which saved ensemble is justified? The direct-head
+        configuration, together with anchoring and training-schedule changes, improved
+        24 of 33 difficult-period weeks. Seeds 2, 3 and 4 were selected on the
+        early-stopping set. The export and resource counts were checked
+        ($P=53\,670$, $E=20$); submission 3 achieved RMSE 62.95.
+        The report attributes the gain to the combined configuration, not the head alone.
+\end{enumerate}
+
 \textbf{My edits and checks.}
 \begin{itemize}
   \item I read and tested the generated code, verified the notebook checks and Outputs, and
@@ -12,7 +50,8 @@ handout requirements (168 values in order, declared $P$ and $E$ matching the sav
   \item The expected ordering in Response 1A and the prediction in Response 4(a) are mine
         and were written before the corresponding Outputs were run.
   \item For Task 2, I chose which variants to try, set the acceptance bar for a change
-        (better on 20 of 33 winter weeks in both folds), decided what to submit, and
+        (at least 3 RMSE mean weekly improvement, better on at least 20 of 33
+        difficult-period weeks, and improvement in each fold), decided what to submit, and
         selected the three members of the final ensemble on the early-stopping set.
   \item I rewrote the drafted text in my own words, cut claims that no saved result
         supported, and added the limits paragraph in Section~\ref{sec:final}.
